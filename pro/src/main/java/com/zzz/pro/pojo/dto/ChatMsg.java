@@ -5,6 +5,8 @@ package com.zzz.pro.pojo.dto;
  * @date 2021-12-03 15:23
  * @description :
  */
+import javax.persistence.Column;
+import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
@@ -17,16 +19,26 @@ import java.util.Date;
 @Table(name="chat_msg")
 public class ChatMsg implements Serializable,Cloneable{
     /** 消息ID */
+    @Id
     private String msgId ;
     /** 发送人 */
+    @Column(name = "send_user_id")
     private String sendUserId ;
+
     /** 收件人 */
+    @Column(name = "accept_user_id")
     private String acceptUserId ;
+
     /** 消息 */
+    @Column(name = "message")
     private String message ;
+
     /** 消息是否签收 */
+    @Column(name = "sign_flag")
     private Integer signFlag ;
+
     /** 发送时间 */
+    @Column(name = "send_time")
     private Date sendTime ;
 
     /** 消息ID */

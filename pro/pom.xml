@@ -39,6 +39,13 @@
             <version>4.1.25.Final</version>
         </dependency>
 
+        <!-- 日志   -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-access</artifactId>
+            <version>1.2.3</version>
+        </dependency>
+
         <!-- apache 工具类 -->
         <dependency>
             <groupId>commons-codec</groupId>
