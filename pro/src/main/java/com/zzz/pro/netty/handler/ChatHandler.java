@@ -49,20 +49,27 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
         System.out.println("收到消息:"+content);
         Channel currentChannel = ctx.channel();
 
-        currentChannel.writeAndFlush("copy");
+        currentChannel.writeAndFlush(
+                new TextWebSocketFrame(
+                        "[服务器在]" + LocalDateTime.now()
+                                + "接受到消息, 消息为：" + content));
 
         //-------------TEST----------------
 
-        String sendUserId = Math.random()+"";
+        String sendUserId = currentChannel.id().asLongText();
         System.out.println(sendUserId);
         ByteBuf msg2 = Unpooled.copiedBuffer("hello,im"+sendUserId, Charset.defaultCharset());
-        UserChannelMap.getInstance().put(sendUserId, currentChannel);
+        if(!UserChannelMap.getInstance().containsValue(sendUserId)){
+            UserChannelMap.getInstance().put(sendUserId, currentChannel);
+        }
         UserChannelMap.output();
 
         //发送
         Channel channel = UserChannelMap.getInstance().get(content);
         if(UserChannelMap.getInstance().get(content)!=null){
-            channel.writeAndFlush(ResponseBuilder.initialResponse(msg2));
+            channel.writeAndFlush(
+                    new TextWebSocketFrame(
+                            "有人给你发送信息了～ 你的ID是："+content ));
         }
 
         // 1. 获取客户端发来的消息

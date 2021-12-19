@@ -38,7 +38,7 @@ public class WSServer {
         bootstrap = new ServerBootstrap();
         bootstrap.group(boss,worker)
                 .channel(NioServerSocketChannel.class)
-                .childHandler(new WSServerInitializer());;
+                .childHandler(new WSServerInitializer());
     }
 
     public void start() {

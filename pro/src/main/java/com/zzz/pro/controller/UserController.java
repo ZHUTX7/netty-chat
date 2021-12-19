@@ -1,10 +1,8 @@
 package com.zzz.pro.controller;
 
+import com.zzz.pro.pojo.dto.UserBaseInfo;
 import com.zzz.pro.pojo.result.SysJSONResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author ztx
@@ -16,8 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/user")
 public class UserController {
     @GetMapping("/login")
-    public SysJSONResult login(){
+    public SysJSONResult login(@RequestBody UserBaseInfo userBaseInfo){
         //test
-        return SysJSONResult.errorMsg("用户名或密码不能为空...");
+        System.out.printf(userBaseInfo.getUserPhone());
+        System.out.printf(userBaseInfo.getUserPassword());
+        return SysJSONResult.ok("登陆成功");
     }
 }
