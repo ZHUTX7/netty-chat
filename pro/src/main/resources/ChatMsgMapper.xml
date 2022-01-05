@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zzz.pro.ChatMsgMapper" >
+  <resultMap id="BaseResultMap" type="com.zzz.pro.pojo.dto.ChatMsg" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <result column="msg_id" property="msgId" jdbcType="VARCHAR" />
+    <result column="send_user_id" property="sendUserId" jdbcType="VARCHAR" />
+    <result column="accept_user_id" property="acceptUserId" jdbcType="VARCHAR" />
+    <result column="message" property="message" jdbcType="VARCHAR" />
+    <result column="sign_flag" property="signFlag" jdbcType="INTEGER" />
+    <result column="send_time" property="sendTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+</mapper>

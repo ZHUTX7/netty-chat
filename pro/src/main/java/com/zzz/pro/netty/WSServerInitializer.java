@@ -8,6 +8,8 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
 
 /**
  * @author ztx
@@ -44,4 +46,6 @@ public class WSServerInitializer extends ChannelInitializer<SocketChannel> {
         // 自定义的handler
         pipeline.addLast(new ChatHandler());
     }
+
+
 }

@@ -1,92 +1,151 @@
 package com.zzz.pro.pojo.dto;
 
-/**
- * @author ztx
- * @date 2021-12-03 15:23
- * @description :
- */
 import javax.persistence.Column;
-import javax.persistence.Id;
 import javax.persistence.Table;
-import java.io.Serializable;
 import java.util.Date;
 
-/**
- * @author : http://www.chiner.pro
- * @date : 2021-12-3
- * @desc : 聊天信息表
- */
-@Table(name="chat_msg")
-public class ChatMsg implements Serializable,Cloneable{
-    /** 消息ID */
-    @Id
-    private String msgId ;
-    /** 发送人 */
+@Table(name = "chat_msg")
+public class ChatMsg {
+    /**
+     * 消息ID
+     */
+    @Column(name = "msg_id")
+    private String msgId;
+
+    /**
+     * 发送人
+     */
     @Column(name = "send_user_id")
-    private String sendUserId ;
+    private String sendUserId;
 
-    /** 收件人 */
+    /**
+     * 收件人
+     */
     @Column(name = "accept_user_id")
-    private String acceptUserId ;
+    private String acceptUserId;
 
-    /** 消息 */
-    @Column(name = "message")
-    private String message ;
+    /**
+     * 消息
+     */
+    private String message;
 
-    /** 消息是否签收 */
+    /**
+     * 消息是否签收
+     */
     @Column(name = "sign_flag")
-    private Integer signFlag ;
+    private Integer signFlag;
 
-    /** 发送时间 */
+    /**
+     * 发送时间
+     */
     @Column(name = "send_time")
-    private Date sendTime ;
+    private Date sendTime;
 
-    /** 消息ID */
-    public String getMsgId(){
-        return this.msgId;
+    /**
+     * 获取消息ID
+     *
+     * @return msg_id - 消息ID
+     */
+    public String getMsgId() {
+        return msgId;
     }
-    /** 消息ID */
-    public void setMsgId(String msgId){
-        this.msgId=msgId;
+
+    /**
+     * 设置消息ID
+     *
+     * @param msgId 消息ID
+     */
+    public void setMsgId(String msgId) {
+        this.msgId = msgId;
     }
-    /** 发送人 */
-    public String getSendUserId(){
-        return this.sendUserId;
+
+    /**
+     * 获取发送人
+     *
+     * @return send_user_id - 发送人
+     */
+    public String getSendUserId() {
+        return sendUserId;
     }
-    /** 发送人 */
-    public void setSendUserId(String sendUserId){
-        this.sendUserId=sendUserId;
+
+    /**
+     * 设置发送人
+     *
+     * @param sendUserId 发送人
+     */
+    public void setSendUserId(String sendUserId) {
+        this.sendUserId = sendUserId;
     }
-    /** 收件人 */
-    public String getAcceptUserId(){
-        return this.acceptUserId;
+
+    /**
+     * 获取收件人
+     *
+     * @return accept_user_id - 收件人
+     */
+    public String getAcceptUserId() {
+        return acceptUserId;
     }
-    /** 收件人 */
-    public void setAcceptUserId(String acceptUserId){
-        this.acceptUserId=acceptUserId;
+
+    /**
+     * 设置收件人
+     *
+     * @param acceptUserId 收件人
+     */
+    public void setAcceptUserId(String acceptUserId) {
+        this.acceptUserId = acceptUserId;
     }
-    /** 消息 */
-    public String getMessage(){
-        return this.message;
+
+    /**
+     * 获取消息
+     *
+     * @return message - 消息
+     */
+    public String getMessage() {
+        return message;
     }
-    /** 消息 */
-    public void setMessage(String message){
-        this.message=message;
+
+    /**
+     * 设置消息
+     *
+     * @param message 消息
+     */
+    public void setMessage(String message) {
+        this.message = message;
     }
-    /** 消息是否签收 */
-    public Integer getSignFlag(){
-        return this.signFlag;
+
+    /**
+     * 获取消息是否签收
+     *
+     * @return sign_flag - 消息是否签收
+     */
+    public Integer getSignFlag() {
+        return signFlag;
     }
-    /** 消息是否签收 */
-    public void setSignFlag(Integer signFlag){
-        this.signFlag=signFlag;
+
+    /**
+     * 设置消息是否签收
+     *
+     * @param signFlag 消息是否签收
+     */
+    public void setSignFlag(Integer signFlag) {
+        this.signFlag = signFlag;
     }
-    /** 发送时间 */
-    public Date getSendTime(){
-        return this.sendTime;
+
+    /**
+     * 获取发送时间
+     *
+     * @return send_time - 发送时间
+     */
+    public Date getSendTime() {
+        return sendTime;
     }
-    /** 发送时间 */
-    public void setSendTime(Date sendTime){
-        this.sendTime=sendTime;
+
+    /**
+     * 设置发送时间
+     *
+     * @param sendTime 发送时间
+     */
+    public void setSendTime(Date sendTime) {
+        this.sendTime = sendTime;
     }
 }
