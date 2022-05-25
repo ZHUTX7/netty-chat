@@ -20,10 +20,13 @@ public class UserChannelMap {
         return UserChannelMap.SingletonMap.instance;
     }
 
-    public static void output() {
+    public static String output() {
+        String userList = "";
         for (HashMap.Entry<String, Channel> entry : UserChannelMap.getInstance().entrySet()) {
             System.out.println("UserId: " + entry.getKey()
                     + ", ChannelId: " + entry.getValue().id().asLongText());
+            userList +=  entry.getKey()+"\n";
         }
+        return userList;
     }
 }

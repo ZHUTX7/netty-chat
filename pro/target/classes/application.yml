@@ -1,0 +1,36 @@
+
+mapper:
+  identity: MYSQL
+  mappers: com.zzz.pro.utils.MyMapper
+  not-empty: false
+mybatis:
+  mapper-locations: classpath:mapperXML/*.xml
+  type-aliases-package: com.zzz.pro.pojo.dto
+netty-core-port: 9999
+pagehelper:
+  helperDialect: mysql
+  params: count=countSql
+  supportMethodsArguments: true
+server:
+  port: 8881
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    password: 3ZStudios@
+    url: jdbc:mysql://159.75.98.190:3306/3zstudios?useSSL=false&characterEncoding=UTF-8&autoReconnect=true
+    username: root
+  # Kafka 配置项，对应 KafkaProperties 配置类
+  kafka:
+    bootstrap-servers: 159.75.98.190:9092 # 指定 Kafka Broker 地址，可以设置多个，以逗号分隔
+    # Kafka Producer 配置项
+    producer:
+      acks: 1 # 0-不应答。1-leader 应答。all-所有 leader 和 follower 应答。
+      retries: 3 # 发送失败时，重试发送的次数
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer # 消息的 key 的序列化
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer # 消息的 value 的序列化
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: com.ztx.kafkademoztx.dto # 信任该包下所有类

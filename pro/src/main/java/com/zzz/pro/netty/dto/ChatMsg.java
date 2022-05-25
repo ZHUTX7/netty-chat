@@ -12,11 +12,25 @@ public class ChatMsg implements Serializable {
 
     private static final long serialVersionUID = 3611169682695799175L;
 
+
     private String senderId;        // 发送者的用户id
     private String receiverId;        // 接受者的用户id
     private String msg;                // 聊天内容
     private String msgId;            // 用于消息的签收
+//    1 -  'TEXT'
+//     2 -        'IMAGE'
+//     3 -       'VIDEO'
+//     4 -      'VOICE'
+    private int msgType;  //1上线 // 2聊天（发送消息） 3聊天（收到消息）
     private Date sendTime;              //发送时间
+
+    public int getMsgType() {
+        return msgType;
+    }
+
+    public void setMsgType(int msgType) {
+        this.msgType = msgType;
+    }
 
     public Date getSendTime() {
         return sendTime;

@@ -15,7 +15,7 @@ public class SysJSONResult {
     // 响应中的数据
     private Object data;
 
-    private String ok;    // 不使用
+
 
     public SysJSONResult() {
     }
@@ -38,6 +38,9 @@ public class SysJSONResult {
         return new SysJSONResult(status, msg, data);
     }
 
+    public static SysJSONResult ok(Object data,String msg) {
+        return new SysJSONResult(200,msg,data);
+    }
     public static SysJSONResult ok(Object data) {
         return new SysJSONResult(data);
     }
@@ -93,12 +96,6 @@ public class SysJSONResult {
         this.data = data;
     }
 
-    public String getOk() {
-        return ok;
-    }
 
-    public void setOk(String ok) {
-        this.ok = ok;
-    }
 
 }

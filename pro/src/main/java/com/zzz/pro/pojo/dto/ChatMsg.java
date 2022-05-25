@@ -10,7 +10,7 @@ public class ChatMsg {
      * 消息ID
      */
     @Column(name = "msg_id")
-    private String msgId;
+    private Long msgId;
 
     /**
      * 发送人
@@ -23,6 +23,9 @@ public class ChatMsg {
      */
     @Column(name = "accept_user_id")
     private String acceptUserId;
+
+    @Column(name = "message_type")
+    private int messageType;
 
     /**
      * 消息
@@ -46,7 +49,7 @@ public class ChatMsg {
      *
      * @return msg_id - 消息ID
      */
-    public String getMsgId() {
+    public Long getMsgId() {
         return msgId;
     }
 
@@ -55,7 +58,7 @@ public class ChatMsg {
      *
      * @param msgId 消息ID
      */
-    public void setMsgId(String msgId) {
+    public void setMsgId(Long msgId) {
         this.msgId = msgId;
     }
 
@@ -147,5 +150,13 @@ public class ChatMsg {
      */
     public void setSendTime(Date sendTime) {
         this.sendTime = sendTime;
+    }
+
+    public int getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(int messageType) {
+        this.messageType = messageType;
     }
 }

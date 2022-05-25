@@ -10,7 +10,7 @@ public class UserMatch {
      * 序列号
      */
     @Id
-    private String id;
+    private int id;
 
     @Column(name = "my_user_id")
     private String myUserId;
@@ -29,7 +29,7 @@ public class UserMatch {
      *
      * @return id - 序列号
      */
-    public String getId() {
+    public int getId() {
         return id;
     }
 
@@ -38,7 +38,7 @@ public class UserMatch {
      *
      * @param id 序列号
      */
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 

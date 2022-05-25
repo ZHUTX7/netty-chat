@@ -2,9 +2,11 @@ package com.zzz.pro.pojo.dto;
 
 import javax.persistence.Column;
 import javax.persistence.Table;
+import java.sql.Timestamp;
 
 @Table(name = "user_base_info")
 public class UserBaseInfo {
+
     /**
      * 用户ID
      */
@@ -34,6 +36,48 @@ public class UserBaseInfo {
      */
     @Column(name = "user_login_state")
     private Integer userLoginState;
+
+    /**
+     * 用户角色 ： 普通用户 VIP SVIP ...
+     * 普通用户： 1
+     * VIP： 2
+     * SVIP ： 3
+     */
+    @Column(name = "user_role")
+    private Integer userRole;
+
+    /**
+     * 上次登录时间
+     */
+    @Column(name = "last_login_time")
+    private Timestamp lastLoginTime;
+
+    @Column(name = "user_coordination")
+    private String coordination;
+
+    public String getCoordination() {
+        return coordination;
+    }
+
+    public void setCoordination(String coordination) {
+        this.coordination = coordination;
+    }
+
+    public Timestamp getLastLoginTime() {
+        return lastLoginTime;
+    }
+
+    public void setLastLoginTime(Timestamp lastLoginTime) {
+        this.lastLoginTime = lastLoginTime;
+    }
+
+    public Integer getUserRole() {
+        return userRole;
+    }
+
+    public void setUserRole(Integer userRole) {
+        this.userRole = userRole;
+    }
 
     /**
      * 获取用户ID

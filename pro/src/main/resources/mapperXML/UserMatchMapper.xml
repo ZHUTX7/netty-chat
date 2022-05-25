@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zzz.pro.mapper.UserMatchMapper" >
+  <resultMap id="BaseResultMap" type="com.zzz.pro.pojo.dto.UserMatch" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="my_user_id" property="myUserId" jdbcType="VARCHAR" />
+    <result column="match_user_id" property="matchUserId" jdbcType="VARCHAR" />
+    <result column="active_state" property="activeState" jdbcType="INTEGER" />
+  </resultMap>
+
+  <!--
+      随机查询一个没有匹配的用户
+    -->
+  <select id="queryUnMatchUser" resultType="String"
+          parameterType="String">
+    SELECT
+      user_personal_info.user_id
+    FROM
+      user_personal_info
+    WHERE
+        user_personal_info.user_id NOT IN ( SELECT user_match.my_user_id FROM user_match )
+      AND user_personal_info.user_id != #{userId}
+	LIMIT 0,
+	1;
+  </select>
+
+  <!--
+        查询匹配到的用户
+      -->
+  <select id="queryMatchUser" resultType="String"
+          parameterType="String">
+    SELECT
+      match_user_id
+    FROM
+      user_match
+    WHERE my_user_id = #{userId};
+  </select>
+</mapper>

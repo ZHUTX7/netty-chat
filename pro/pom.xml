@@ -15,6 +15,7 @@
     <description>pro</description>
     <properties>
         <java.version>1.8</java.version>
+        <docker.image.prefix>netty_chat</docker.image.prefix>
     </properties>
     <dependencies>
         <dependency>
@@ -37,13 +38,6 @@
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
             <version>4.1.25.Final</version>
-        </dependency>
-
-        <!-- 日志   -->
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-access</artifactId>
-            <version>1.2.3</version>
         </dependency>
 
         <!-- apache 工具类 -->
@@ -81,12 +75,44 @@
             <artifactId>mapper-spring-boot-starter</artifactId>
             <version>1.2.4</version>
         </dependency>
+
+        <!-- Kafka 依赖 Server&Client -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+
+        </dependency>
+
+        <!-- Kafka  Message 序列化 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-json</artifactId>
+        </dependency>
+
+
+        <!--JWT -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.11</version>
+        </dependency>
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>3.4.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openjdk.jol</groupId>
+            <artifactId>jol-core</artifactId>
+            <version>0.9</version>
+        </dependency>
         <!--pagehelper -->
-<!--        <dependency>-->
-<!--            <groupId>com.github.pagehelper</groupId>-->
-<!--            <artifactId>pagehelper-spring-boot-starter</artifactId>-->
-<!--            <version>1.2.3</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>com.github.pagehelper</groupId>-->
+        <!--            <artifactId>pagehelper-spring-boot-starter</artifactId>-->
+        <!--            <version>1.2.3</version>-->
+        <!--        </dependency>-->
 
         <!-- 高性能分布式文件服务器 -->
         <dependency>
@@ -107,7 +133,11 @@
             <version>3.3.3</version>
         </dependency>
 
+
     </dependencies>
+
+
+
 
     <build>
         <plugins>
@@ -115,7 +145,24 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>1.0.0</version>
+                <configuration>
+                    <imageName>${docker.image.prefix}/${project.artifactId}</imageName>
+                    <dockerDirectory></dockerDirectory>
+                    <resources>
+                        <resource>
+                            <targetPath>/</targetPath>
+                            <directory>${project.build.directory}</directory>
+                            <include>${project.build.finalName}.jar</include>
+                        </resource>
+                    </resources>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
 
 </project>
