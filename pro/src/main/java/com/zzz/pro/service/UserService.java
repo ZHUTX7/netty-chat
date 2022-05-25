@@ -20,4 +20,7 @@ public interface UserService {
     SysJSONResult delMatch(UserMatch userMatch );
 
     SysJSONResult getMatchPerson(UserBaseInfo userBaseInfo );
+
+    //查找未读信息
+    SysJSONResult getUnReadMessage(UserBaseInfo userBaseInfo );
 }

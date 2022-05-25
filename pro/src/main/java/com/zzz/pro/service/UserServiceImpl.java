@@ -1,6 +1,8 @@
 package com.zzz.pro.service;
 
+import com.zzz.pro.dao.ChatMsgRepository;
 import com.zzz.pro.dao.UserRepository;
+import com.zzz.pro.pojo.dto.ChatMsg;
 import com.zzz.pro.pojo.dto.UserBaseInfo;
 import com.zzz.pro.pojo.dto.UserMatch;
 import com.zzz.pro.pojo.dto.UserPersonalInfo;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -23,7 +26,8 @@ public class UserServiceImpl implements UserService{
     @Resource
     private UserRepository userRepository;
 
-
+    @Resource
+    private ChatMsgRepository chatMsgRepository;
     private IDWorker idWorker = new IDWorker(1,1,1);
 
     @Override
@@ -209,6 +213,22 @@ public class UserServiceImpl implements UserService{
     public SysJSONResult getMatchPerson(UserBaseInfo userBaseInfo) {
 
        return SysJSONResult.ok(userRepository.getMatchPerson(userBaseInfo.getUserId()));
+
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public SysJSONResult getUnReadMessage(UserBaseInfo userBaseInfo) {
+        try{
+            ChatMsg chatMsg = new ChatMsg();
+            chatMsg.setAcceptUserId(userBaseInfo.getUserId());
+            chatMsg.setSignFlag(0);
+            List<ChatMsg> list = chatMsgRepository.getMsg(chatMsg);
+            return SysJSONResult.ok(list,"查询成功！");
+
+        }catch (Exception e){
+            return SysJSONResult.ok("查询失败～");
+        }
 
     }
 

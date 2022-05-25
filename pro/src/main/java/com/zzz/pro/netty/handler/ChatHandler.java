@@ -42,7 +42,7 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
     public static ChannelGroup users =
             new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
-    // TODO 2 从kafka获取未消费数据（离线消息）传给手机客户端
+    // TODO 2 从Mysql获取未消费数据（离线消息）传给手机客户端
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame msg)
             throws Exception {

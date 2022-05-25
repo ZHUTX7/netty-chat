@@ -45,7 +45,7 @@ public class UserController {
 
     }
 
-    //TODO 查询用户资料
+
     @PostMapping("/profile")
     public SysJSONResult profile(@RequestBody LoginDTO loginDTO,@RequestHeader("token") String token){
 
@@ -144,7 +144,7 @@ public class UserController {
     }
 
 
-    //TODO 1 匹配接口
+
     @PostMapping("/match")
     public SysJSONResult match(@RequestHeader("token") String token){
         String userId =  JWTUtils.getClaim(token,"userId");
@@ -153,7 +153,7 @@ public class UserController {
         return  userService.match(u);
     }
 
-    //TODO 解除匹配
+
     @PostMapping("/delMatch")
     public SysJSONResult delMatch(@RequestBody UserMatch userMatch,@RequestHeader("token") String token){
         userMatch.setMyUserId(JWTUtils.getClaim(token,"userId"));
@@ -168,4 +168,15 @@ public class UserController {
 
         return  userService.getMatchPerson(u);
     }
+
+    //查找未读信息
+    @PostMapping("/getUnReadMessage")
+    public SysJSONResult getUnReadMessage(@RequestHeader("token") String token){
+        String userId =  JWTUtils.getClaim(token,"userId");
+        UserBaseInfo u = new UserBaseInfo();
+        u.setUserId(userId);
+        return  userService.getUnReadMessage(u);
+    }
+
+
 }
