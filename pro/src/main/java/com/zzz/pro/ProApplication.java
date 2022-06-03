@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.transaction.TransactionDefinition;
 import tk.mybatis.spring.annotation.MapperScan;
 
 import javax.annotation.Resource;
@@ -17,12 +18,9 @@ import javax.annotation.Resource;
 @MapperScan(basePackages = "com.zzz.pro.mapper")
 public class ProApplication {
     private static Logger logger = LoggerFactory.getLogger(ProApplication.class);
-
-    @Resource
-    KafkaTemplate<Object, Object> kafkaTemplate;
-
     @Bean
     public SpringUtil getSpringUtil() {
+
         return new SpringUtil();
     }
 

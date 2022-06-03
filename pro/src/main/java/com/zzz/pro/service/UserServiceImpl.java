@@ -28,6 +28,7 @@ public class UserServiceImpl implements UserService{
 
     @Resource
     private ChatMsgRepository chatMsgRepository;
+
     private IDWorker idWorker = new IDWorker(1,1,1);
 
     @Override

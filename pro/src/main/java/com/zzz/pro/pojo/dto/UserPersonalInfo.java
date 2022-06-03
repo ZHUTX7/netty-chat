@@ -14,6 +14,12 @@ public class UserPersonalInfo {
     private String userId;
 
     /**
+     * 用户性别 1男 0女
+     */
+    @Column(name = "user_sex")
+    private int userSex;
+
+    /**
      * 用户昵称
      */
     @Column(name = "user_nickname")
@@ -341,5 +347,13 @@ public class UserPersonalInfo {
      */
     public void setUserFaceImageBig(String userFaceImageBig) {
         this.userFaceImageBig = userFaceImageBig;
+    }
+
+    public int getUserSex() {
+        return userSex;
+    }
+
+    public void setUserSex(int userSex) {
+        this.userSex = userSex;
     }
 }

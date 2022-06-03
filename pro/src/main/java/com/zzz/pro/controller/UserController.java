@@ -1,5 +1,6 @@
 package com.zzz.pro.controller;
 
+import com.zzz.pro.config.ApiLimit;
 import com.zzz.pro.pojo.InterfaceDto.LoginDTO;
 import com.zzz.pro.pojo.bo.UserBO;
 import com.zzz.pro.pojo.dto.UserBaseInfo;
@@ -30,6 +31,7 @@ public class UserController {
     @Resource
     private UserService userService;
 
+    @ApiLimit(seconds = 10,maxCount = 3)
     @PostMapping("/login")
     public SysJSONResult login(@RequestBody LoginDTO loginDTO,@RequestHeader("token") String token){
 

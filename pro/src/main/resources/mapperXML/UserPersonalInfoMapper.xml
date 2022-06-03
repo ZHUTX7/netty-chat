@@ -7,6 +7,7 @@
     -->
     <result column="user_id" property="userId" jdbcType="VARCHAR" />
     <result column="user_nickname" property="userNickname" jdbcType="VARCHAR" />
+    <result column="user_sex" property="userSex" jdbcType="INTEGER" />
     <result column="user_gender" property="userGender" jdbcType="INTEGER" />
     <result column="user_motto" property="userMotto" jdbcType="VARCHAR" />
     <result column="user_memo" property="userMemo" jdbcType="VARCHAR" />
