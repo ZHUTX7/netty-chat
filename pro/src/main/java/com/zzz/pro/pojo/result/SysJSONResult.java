@@ -1,10 +1,13 @@
 package com.zzz.pro.pojo.result;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * @author ztx
  * @date 2021-12-03 11:17
  * @description :
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SysJSONResult {
     // 响应业务状态
     private Integer status;

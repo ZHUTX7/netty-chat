@@ -11,6 +11,8 @@ import com.zzz.pro.pojo.vo.RegisterVO;
 import com.zzz.pro.service.UserService;
 import com.zzz.pro.utils.Img2Base64;
 import com.zzz.pro.utils.JWTUtils;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,10 +33,13 @@ public class UserController {
     @Resource
     private UserService userService;
 
-    @ApiLimit(seconds = 10,maxCount = 3)
+
+
+//    @ApiLimit(seconds = 10,maxCount = 3)
     @PostMapping("/login")
     public SysJSONResult login(@RequestBody LoginDTO loginDTO,@RequestHeader("token") String token){
 
+        System.out.println("执行了");
         userService.userLogin(loginDTO.getLoginParams());
         //1.username可为邮箱，手机号，用户名，后端需验证username的类型
          String type =   loginDTO.getLoginMethod();
@@ -46,6 +51,7 @@ public class UserController {
          }
 
     }
+
 
 
     @PostMapping("/profile")

@@ -6,6 +6,8 @@ import com.zzz.pro.mapper.UserPersonalInfoMapper;
 import com.zzz.pro.pojo.dto.UserBaseInfo;
 import com.zzz.pro.pojo.dto.UserMatch;
 import com.zzz.pro.pojo.dto.UserPersonalInfo;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -29,8 +31,6 @@ public class UserRepositoryImpl implements UserRepository {
         UserBaseInfo user = new UserBaseInfo();
         user.setUserPhone(phone);
         UserBaseInfo u = userBaseInfoMapper.selectOne(user);
-        System.out.printf("-----------");
-        System.out.println(u);
         return u != null ? true : false;
     }
 
@@ -44,7 +44,9 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    @Cacheable(key = "#id",value = "userInfo")
     public UserPersonalInfo queryUserPerInfo(String id) {
+        System.out.println("执行了SQL");
         UserPersonalInfo u = new UserPersonalInfo();
         u.setUserId(id);
        UserPersonalInfo userPersonalInfo = userPersonalInfoMapper.selectOne(u);
@@ -72,6 +74,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    @CachePut(key = "#id",value = "userInfo")
     public int updateUserProfile(UserPersonalInfo userPersonalInfo) {
         return  userPersonalInfoMapper.updateByPrimaryKey(userPersonalInfo);
     }

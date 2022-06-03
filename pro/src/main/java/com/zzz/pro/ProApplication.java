@@ -8,6 +8,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.transaction.TransactionDefinition;
 import tk.mybatis.spring.annotation.MapperScan;
@@ -16,6 +17,7 @@ import javax.annotation.Resource;
 
 @SpringBootApplication
 @MapperScan(basePackages = "com.zzz.pro.mapper")
+@EnableAspectJAutoProxy
 public class ProApplication {
     private static Logger logger = LoggerFactory.getLogger(ProApplication.class);
     @Bean

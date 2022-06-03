@@ -3,6 +3,7 @@ package com.zzz.pro.dao;
 import com.zzz.pro.pojo.dto.UserBaseInfo;
 import com.zzz.pro.pojo.dto.UserMatch;
 import com.zzz.pro.pojo.dto.UserPersonalInfo;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

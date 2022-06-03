@@ -10,6 +10,7 @@ import com.zzz.pro.pojo.result.SysJSONResult;
 import com.zzz.pro.utils.IDWorker;
 import com.zzz.pro.utils.JWTUtils;
 import io.netty.util.internal.StringUtil;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
