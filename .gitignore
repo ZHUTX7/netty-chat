@@ -19,5 +19,11 @@
 *.tar.gz
 *.rar
 *.yml
+*.xml
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+kafkaConsumer/.DS_Store
+kafkaConsumer/.DS_Store
+kafkaConsumer/.idea
+pro/.idea
+

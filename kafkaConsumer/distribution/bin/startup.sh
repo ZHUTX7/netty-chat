@@ -1,0 +1,1 @@
+java -jar message-consumer-1.jar

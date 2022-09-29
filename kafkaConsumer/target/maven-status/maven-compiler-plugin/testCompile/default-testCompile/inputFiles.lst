@@ -1,3 +1,3 @@
-/Users/zhutianxiang/Documents/workspace/ZZZnetty-chat/pro/src/test/java/com/zzz/pro/ProApplicationTests.java
-/Users/zhutianxiang/Documents/workspace/ZZZnetty-chat/pro/src/test/java/com/zzz/pro/ConsumerTest.java
-/Users/zhutianxiang/Documents/workspace/ZZZnetty-chat/pro/src/test/java/com/zzz/pro/ProduceTest.java
+/Users/zhutianxiang/Documents/workspace/ZZZnetty-chat/kafkaConsumer/src/test/java/com/zzz/pro/ConsumerTest.java
+/Users/zhutianxiang/Documents/workspace/ZZZnetty-chat/kafkaConsumer/src/test/java/com/zzz/pro/ProduceTest.java
+/Users/zhutianxiang/Documents/workspace/ZZZnetty-chat/kafkaConsumer/src/test/java/com/zzz/pro/ProApplicationTests.java
