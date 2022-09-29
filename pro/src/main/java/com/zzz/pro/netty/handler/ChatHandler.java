@@ -7,15 +7,14 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.zzz.pro.enums.MsgActionEnum;
+import com.zzz.pro.enums.MsgSignFlagEnum;
 import com.zzz.pro.netty.UserChannelMap;
 import com.zzz.pro.netty.WSServer;
 import com.zzz.pro.netty.dto.ChatMsg;
 import com.zzz.pro.netty.enity.DataContent;
-import com.zzz.pro.task.Message2KafkaTask;
-import com.zzz.pro.task.TaskExecutor;
+import com.zzz.pro.service.ChatMsgService;
+import com.zzz.pro.task.Msg2Kafka;
 import com.zzz.pro.utils.*;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -23,8 +22,6 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.util.concurrent.GlobalEventExecutor;
-
-import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +39,6 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
     public static ChannelGroup users =
             new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
-    // TODO 2 从Mysql获取未消费数据（离线消息）传给手机客户端
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame msg)
             throws Exception {
@@ -73,28 +69,9 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
         }
 
         Integer action = dataContent.getAction();
-
-        // 2. 验证token
-//        String token = dataContent.getToken();
-//        if(StringUtil.isNullOrEmpty(token)||!"123".equals(token)){
-//            currentChannel.writeAndFlush(
-//                    new TextWebSocketFrame(
-//                            "没有附带token值，测试阶段token值为123"));
-//            currentChannel.close();
-//            return;
-//        }
-//        HashMap<String,Object> verifyMap = JWTUtils.verify(token);
-//        if((Integer) verifyMap.get("token_code")!=1){
-//            currentChannel.writeAndFlush(
-//                    new TextWebSocketFrame(
-//                            "token无效"));
-//            currentChannel.close();
-//            return;
-//        }
-//        String sendUserId = JWTUtils.getClaim(token,"userId");
         String sendUserId = dataContent.getChatMsg().getSenderId();
 
-        // 3. 判断消息类型，根据不同的类型来处理不同的业务
+        // 2. 判断消息类型，根据不同的类型来处理不同的业务
         if (action == MsgActionEnum.CONNECT.type) {
             //当websocket 第一次open的时候，初始化channel，把用的channel和userid关联起来
 
@@ -110,7 +87,8 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
                             "<<<测试打印信息>>>[当前在线用户]：\n"+userList));
 
 
-        } else if (action == MsgActionEnum.CHAT.type) {
+        }
+        else if (action == MsgActionEnum.CHAT.type) {
             //  2.2  聊天类型的消息，把聊天记录保存到数据库，同时标记消息的签收状态[未签收]
             if(UserChannelMap.getInstance().get(sendUserId) == null
                     || !UserChannelMap.getInstance().get(sendUserId).equals(currentChannel)){
@@ -120,60 +98,50 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
                 currentChannel.close();
             }
             ChatMsg chatMsg = dataContent.getChatMsg();
-
-
-
+            int sign = MsgSignFlagEnum.unsign.getType();
+            System.out.printf("type is "+chatMsg.getMsgType()+"");
             String msgText = chatMsg.getMsg();
             String receiverId = chatMsg.getReceiverId();
             String senderId = chatMsg.getSenderId();
             Channel receiveChannel = UserChannelMap.getInstance().get(receiverId);
             dataContent.setAction(3);
-            if(receiveChannel == null){
-                //拷贝dto文件准备落kafka
-                com.zzz.pro.pojo.dto.ChatMsg dto =  BeanCopy.copy(chatMsg);
-                dto.setSignFlag(0);
-                TaskExecutor.submit(new Message2KafkaTask(dto));
 
+            // 1 - 用户不在线
+            if(receiveChannel == null){
+
+                // TODO 调用手机推送
                 currentChannel.writeAndFlush(
                         new TextWebSocketFrame(
-                              "当前用户不在线"));
+                              "收信用户不在线"));
+                logger.info("收信用户不在线");
             }
-
+            // 2 - 用户在线
             else {
-                receiveChannel.writeAndFlush(new TextWebSocketFrame(
-                      "<<<测试打印信息>>>  发送人："+senderId+"  发送信息：" + msgText));
-                receiveChannel.writeAndFlush(new TextWebSocketFrame(
-                       JsonUtils.objectToJson(dataContent)));
+                try {
+                    receiveChannel.writeAndFlush(new TextWebSocketFrame(
+                            "<<<测试打印信息>>>  发送人："+senderId+"  发送信息：" + msgText));
+                    receiveChannel.writeAndFlush(new TextWebSocketFrame(
+                            JsonUtils.objectToJson(dataContent)));
+                    sign = MsgSignFlagEnum.signed.getType();
+                }catch (Exception e){
+                    logger.error("Message发送给在线用户报错");
+                }
 
-                //拷贝dto文件准备落kafka
-                com.zzz.pro.pojo.dto.ChatMsg dto =  BeanCopy.copy(chatMsg);
-                dto.setSignFlag(0);
-                TaskExecutor.submit(new Message2KafkaTask(dto));
             }
-
+            //聊天数据落地
+            SaveChatData(chatMsg,sign);
 
         }
+        else if (action == MsgActionEnum.SIGNED.type) {
+            List<String> ids = JsonUtils.jsonToPojo(dataContent.getExpand(), List.class);
+            ChatMsgService chatMsgService  = (ChatMsgService) SpringUtil.getBean("chatMsgServiceImpl");
+            chatMsgService.updateMsgStatus(ids);
 
-//
-//            // TODO : 保存消息到数据库，并且标记为 未签收
-//            {
-//                //xxxxxxxxxx
-//            }
-//            // 2.3 判断收件人是否在线
-//            // 发送消息
-//            // TODO : 从全局用户Channel关系中获取接受方的channel
-//            Channel receiveChannel = UserChannelMap.getInstance().get(receiverId);
-//
-//            // 2.4 不在线的话...
-//
-//        }
-//          else if (action == MsgActionEnum.SIGNED.type) {
-//            // TODO : 签收消息
-//        } else if (action == MsgActionEnum.KEEPALIVE.type) {
-//            //  2.4  心跳类型的消息
+
+        }else if (action == MsgActionEnum.KEEPALIVE.type) {
+            //  2.4  心跳类型的消息
 //            System.out.println("收到来自channel为[" + currentChannel + "]的心跳包...");
-//        }
-
+        }
 
     }
 
@@ -194,10 +162,25 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
         // 当触发handlerRemoved，ChannelGroup会自动移除对应客户端的channel
 //		clients.remove(ctx.channel());
-        System.out.println("客户端断开，channle对应的长id为："
+        logger.info("客户端断开，channle对应的长id为："
                 + ctx.channel().id().asLongText());
-        System.out.println("客户端断开，channle对应的短id为："
-                + ctx.channel().id().asShortText());
+
     }
 
+    //拷贝dto文件准备落kafka
+    private void SaveChatData(ChatMsg chatMsg,int sign){
+
+        com.zzz.pro.pojo.dto.ChatMsg dto =  BeanCopy.copy(chatMsg);
+        dto.setSignFlag(sign);
+        Msg2Kafka msg2Kafka  = (Msg2Kafka) SpringUtil.getBean("msg2Kafka");
+        msg2Kafka.asyncSend(dto);
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        cause.printStackTrace();
+        // 发生异常之后关闭连接（关闭channel），随后从ChannelGroup中移除
+        ctx.channel().close();
+        users.remove(ctx.channel());
+    }
 }

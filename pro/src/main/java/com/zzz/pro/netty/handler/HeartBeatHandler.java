@@ -6,12 +6,17 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @Description: 用于检测channel的心跳handler
  * 				 继承ChannelInboundHandlerAdapter，从而不需要实现channelRead0方法
  */
 public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
+
+    private static Logger logger = LoggerFactory.getLogger(HeartBeatHandler.class);
+
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
@@ -26,13 +31,11 @@ public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
                 System.out.println("进入写空闲...");
             } else if (event.state() == IdleState.ALL_IDLE) {
 
-                System.out.println("channel关闭前，users的数量为：" + ChatHandler.users.size());
-
+                logger.debug("channel关闭前，users的数量为：" + ChatHandler.users.size());
                 Channel channel = ctx.channel();
                 // 关闭无用的channel，以防资源浪费
                 channel.close();
-
-                System.out.println("channel关闭后，users的数量为：" + ChatHandler.users.size());
+                logger.debug("channel关闭后，users的数量为：" + ChatHandler.users.size());
             }
         }
 

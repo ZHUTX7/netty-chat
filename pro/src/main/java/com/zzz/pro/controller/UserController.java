@@ -1,6 +1,6 @@
 package com.zzz.pro.controller;
 
-import com.zzz.pro.config.ApiLimit;
+
 import com.zzz.pro.pojo.InterfaceDto.LoginDTO;
 import com.zzz.pro.pojo.bo.UserBO;
 import com.zzz.pro.pojo.dto.UserBaseInfo;
@@ -149,41 +149,6 @@ public class UserController {
 
         // 获取前端传过来的base64字符串, 然后转换为文件对象再上传
         return  userService.delUser(userBaseInfo);
-    }
-
-
-
-    @PostMapping("/match")
-    public SysJSONResult match(@RequestHeader("token") String token){
-        String userId =  JWTUtils.getClaim(token,"userId");
-        UserBaseInfo u = new UserBaseInfo();
-        u.setUserId(userId);
-        return  userService.match(u);
-    }
-
-
-    @PostMapping("/delMatch")
-    public SysJSONResult delMatch(@RequestBody UserMatch userMatch,@RequestHeader("token") String token){
-        userMatch.setMyUserId(JWTUtils.getClaim(token,"userId"));
-        return  userService.delMatch(userMatch);
-    }
-
-    @PostMapping("/getMatchPerson")
-    public SysJSONResult getMatchPerson(@RequestHeader("token") String token){
-        String userId =  JWTUtils.getClaim(token,"userId");
-        UserBaseInfo u = new UserBaseInfo();
-        u.setUserId(userId);
-
-        return  userService.getMatchPerson(u);
-    }
-
-    //查找未读信息
-    @PostMapping("/getUnReadMessage")
-    public SysJSONResult getUnReadMessage(@RequestHeader("token") String token){
-        String userId =  JWTUtils.getClaim(token,"userId");
-        UserBaseInfo u = new UserBaseInfo();
-        u.setUserId(userId);
-        return  userService.getUnReadMessage(u);
     }
 
 

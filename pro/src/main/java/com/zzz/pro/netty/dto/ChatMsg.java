@@ -21,7 +21,7 @@ public class ChatMsg implements Serializable {
 //     2 -        'IMAGE'
 //     3 -       'VIDEO'
 //     4 -      'VOICE'
-    private int msgType;  //1上线 // 2聊天（发送消息） 3聊天（收到消息）
+    private Integer msgType;
     private Date sendTime;              //发送时间
 
     public int getMsgType() {
@@ -71,5 +71,7 @@ public class ChatMsg implements Serializable {
     public void setMsgId(String msgId) {
         this.msgId = msgId;
     }
+
+
 
 }

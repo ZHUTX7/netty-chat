@@ -15,4 +15,9 @@ public class ChatMsgRepositoryImpl implements ChatMsgRepository{
     public List<ChatMsg> getMsg(ChatMsg chatMsg) {
         return chatMsgMapper.select(chatMsg);
     }
+
+    @Override
+    public void batchUpdateMsgSigned(List<String> msgIds) {
+        chatMsgMapper.batchUpdateMsgSigned(msgIds);
+    }
 }

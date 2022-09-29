@@ -1,9 +1,12 @@
 package com.zzz.pro.pojo.dto;
 
+import org.springframework.stereotype.Component;
+
 import javax.persistence.Column;
 import javax.persistence.Table;
 import java.util.Date;
 
+@Component
 @Table(name = "chat_msg")
 public class ChatMsg {
     /**
@@ -25,7 +28,7 @@ public class ChatMsg {
     private String acceptUserId;
 
     @Column(name = "message_type")
-    private int messageType;
+    private Integer messageType;
 
     /**
      * 消息

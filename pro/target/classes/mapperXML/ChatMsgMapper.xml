@@ -13,4 +13,23 @@
     <result column="send_time" property="sendTime" jdbcType="TIMESTAMP" />
     <result column="message_type" property="messageType" jdbcType="INTEGER" />
   </resultMap>
+
+  <update id="batchUpdateMsgSigned">
+
+    update chat_msg set sign_flag = 1 where msg_id in
+    <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+      #{item}
+    </foreach>
+
+  </update>
+
+  <select id="getUnSignMsg">
+    SELECT  c.msg_id,c.accept_user_id,c.message,c.message_type,c.send_time,c.send_user_id
+    FROM chat_msg c
+    WHERE c.sign_flag=0
+    AND c.accept_user_id = #{item}
+    ORDER BY c.send_time;
+
+  </select>
+
 </mapper>

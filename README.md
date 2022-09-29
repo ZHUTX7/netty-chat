@@ -52,7 +52,7 @@
     "chatMsg": {
         "senderId": "10001",
         "receiverId": "10002",
-        "msg": "hello, i'm 10001 ",
+        "msg": "heyyyyyyy ",
         "msgId": "12",
         "msgType": 1,
         "sendTime": "1651995740"
@@ -77,6 +77,22 @@ msgType int 类型，对应关系如下
 //     3 -       'VIDEO'
 //     4 -      'VOICE'
 ```
+
+
+
+# 3. WS用户心跳包
+
+```
+{
+    "action":4,
+    "chatMsg":{
+        "senderId":"10001"
+    },
+    "token":"123"
+}
+```
+
+
 
 
 

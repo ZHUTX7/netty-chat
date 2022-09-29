@@ -16,11 +16,6 @@ public interface UserService {
     SysJSONResult userLoginByToken(String token );
     SysJSONResult updateUserProfile(UserPersonalInfo userPersonalInfo );
 
-    SysJSONResult match(UserBaseInfo userBaseInfo );
-    SysJSONResult delMatch(UserMatch userMatch );
-
-    SysJSONResult getMatchPerson(UserBaseInfo userBaseInfo );
-
     //查找未读信息
     SysJSONResult getUnReadMessage(UserBaseInfo userBaseInfo );
 }

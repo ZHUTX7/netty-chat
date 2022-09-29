@@ -46,7 +46,6 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     @Cacheable(key = "#id",value = "userInfo")
     public UserPersonalInfo queryUserPerInfo(String id) {
-        System.out.println("执行了SQL");
         UserPersonalInfo u = new UserPersonalInfo();
         u.setUserId(id);
        UserPersonalInfo userPersonalInfo = userPersonalInfoMapper.selectOne(u);

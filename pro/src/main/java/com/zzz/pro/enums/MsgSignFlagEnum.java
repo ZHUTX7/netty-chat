@@ -18,7 +18,13 @@ public enum MsgSignFlagEnum {
         this.content = content;
     }
 
+    public String getContent() {
+        return content;
+    }
+
     public Integer getType() {
         return type;
     }
+
+
 }
