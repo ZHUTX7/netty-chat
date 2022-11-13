@@ -36,7 +36,6 @@ com/zzz/pro/netty/WSServer$SingletonWSServer.class
 com/zzz/pro/utils/JsonUtils.class
 com/zzz/pro/netty/handler/HeartBeatHandler.class
 com/zzz/pro/netty/dto/ChatMsg.class
-com/zzz/pro/enums/RedisKeyName.class
 com/zzz/pro/utils/ResponseBuilder.class
 com/zzz/pro/mapper/UserBaseInfoMapper.class
 com/zzz/pro/NettyBootstrap.class
