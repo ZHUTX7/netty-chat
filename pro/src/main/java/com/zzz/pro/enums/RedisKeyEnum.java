@@ -12,6 +12,7 @@ public enum RedisKeyEnum implements CodeEnum {
     USER_POSITION("user:position","用户位置"),
     BOYS_WAITING_POOL("match:boys_waitingPool","待匹配用户池"),
     GIRLS_WAITING_POOL("match:girls_waitingPool","待匹配用户池"),
+    DISLIKE_USER_POOL("match:dislikePool","黑名单"),
     MATCH_SELECTED_POOL("match:waitingPool:","对冲池")
     ;
     private String code;

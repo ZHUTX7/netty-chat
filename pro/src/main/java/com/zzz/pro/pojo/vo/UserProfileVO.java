@@ -7,6 +7,7 @@ import java.io.Serializable;
 @Data
 public class UserProfileVO implements Serializable {
     private static final long serialVersionUID = -1L;
+    private String userId;
     private String userNickname;
     private String userFaceImage;
     private Integer userSex;

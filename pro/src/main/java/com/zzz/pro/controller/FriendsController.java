@@ -70,5 +70,12 @@ public class FriendsController {
         return  ResultVOUtil.success();
     }
 
+    //取消匹配
+    @PostMapping("/unBoost")
+    public SysJSONResult unBoost(@RequestHeader("token") String token,@RequestBody String targetUserId){
+        String userId =  JWTUtils.getClaim(token,"userId");
+        friendsService.boostMatch(userId,targetUserId);
+        return  ResultVOUtil.success();
+    }
 
 }

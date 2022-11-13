@@ -76,6 +76,12 @@ public class FriendsServiceImpl implements FriendsService{
             Map<String,UserProfileVO> userMap = redisTemplate.opsForHash().entries(RedisKeyEnum.GIRLS_WAITING_POOL.getCode());
             //根据筛选条件计算
             for(Map.Entry<String,UserProfileVO> entry : userMap.entrySet()){
+                //TODO 筛选测试阶段关闭
+//                String userId = entry.getValue().getUserId();
+//                boolean isDislikeUser = redisTemplate.opsForHash().hasKey(RedisKeyEnum.DISLIKE_USER_POOL.getCode()+"userId",userId);
+//                if(isDislikeUser){
+//                    continue;
+//                }
                 list.add(entry.getValue());
             }
 
@@ -83,6 +89,12 @@ public class FriendsServiceImpl implements FriendsService{
             Map<String,UserProfileVO> userMap = redisTemplate.opsForHash().entries(RedisKeyEnum.BOYS_WAITING_POOL.getCode());
             //根据筛选条件计算
             for(Map.Entry<String,UserProfileVO> entry : userMap.entrySet()){
+                //TODO 筛选测试阶段关闭
+//                String userId = entry.getValue().getUserId();
+//                boolean isDislikeUser = redisTemplate.opsForHash().hasKey(RedisKeyEnum.DISLIKE_USER_POOL.getCode()+"userId",userId);
+//                if(isDislikeUser){
+//                    continue;
+//                }
                 list.add(entry.getValue());
             }
         }
@@ -100,6 +112,7 @@ public class FriendsServiceImpl implements FriendsService{
             List<UserPersonalInfo> allUser =  userRepository.getAll(u);
 
             BeanUtils.copyProperties(allUser,list);
+
         }
         return list;
     }
@@ -137,7 +150,7 @@ public class FriendsServiceImpl implements FriendsService{
         if(StringUtils.isEmpty(me)){
             redisTemplate.opsForValue().set(RedisKeyEnum.MATCH_SELECTED_POOL.getCode()+userId,targetId);
 
-           return ResultVOUtil.error(201,null);
+            return ResultVOUtil.error(201,null);
         }
         else {
             UserMatch userMatch = new UserMatch();
@@ -146,6 +159,12 @@ public class FriendsServiceImpl implements FriendsService{
             userRepository.addMatchUsers(userMatch);
             return ResultVOUtil.success("恭喜，匹配成功～",null);
         }
+    }
+
+    @Override
+    public void unBoostMatch(String userId, String targetId) {
+        String me = (String)redisTemplate.opsForValue().get(RedisKeyEnum.MATCH_SELECTED_POOL.getCode()+targetId);
+        redisTemplate.opsForHash().put(RedisKeyEnum.DISLIKE_USER_POOL.getCode()+"userId",targetId,1);
     }
 
 

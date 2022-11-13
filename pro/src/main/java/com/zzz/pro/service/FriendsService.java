@@ -25,6 +25,8 @@ public interface FriendsService {
 
     //确认匹配
     SysJSONResult boostMatch(String userId,String targetId);
+    //不喜欢该用户
+    void unBoostMatch(String userId,String targetId);
     //删除已经匹配对象
     void delMatch(UserMatch userMatch );
 
