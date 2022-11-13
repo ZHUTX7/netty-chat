@@ -48,12 +48,8 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
         String content = msg.text();
         Channel currentChannel = ctx.channel();
 
-        currentChannel.writeAndFlush(
-                new TextWebSocketFrame(
-                        "[服务器在]" + LocalDateTime.now()
-                                + "接受到消息, 消息为：" + content));
-
         // 1. 获取客户端发来的消息
+        //    数据解码解析
         DataContent dataContent = null;
         try{
             dataContent = JsonUtils.jsonToPojo(content, DataContent.class);
@@ -72,19 +68,17 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
         String sendUserId = dataContent.getChatMsg().getSenderId();
 
         // 2. 判断消息类型，根据不同的类型来处理不同的业务
+        // 2.1 websocket 第一次连接，用户上线
         if (action == MsgActionEnum.CONNECT.type) {
             //当websocket 第一次open的时候，初始化channel，把用的channel和userid关联起来
+
 
             UserChannelMap.getInstance().put(sendUserId, currentChannel);
             //测试
             logger.info("当前在线用户列表为：");
             String userList = UserChannelMap.output();
-            currentChannel.writeAndFlush(
-                    new TextWebSocketFrame(
-                            "<<<测试打印信息>>>[用户]"+sendUserId +"登陆成功，  时间：" +LocalDateTime.now()));
-            currentChannel.writeAndFlush(
-                    new TextWebSocketFrame(
-                            "<<<测试打印信息>>>[当前在线用户]：\n"+userList));
+            logger.info( "<<<测试打印信息>>>[用户]"+sendUserId +"登陆成功，  时间：" +LocalDateTime.now());
+            logger.info( "<<<测试打印信息>>>[当前在线用户]：\n"+userList);
 
 
         }
@@ -110,16 +104,12 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
             if(receiveChannel == null){
 
                 // TODO 调用手机推送
-                currentChannel.writeAndFlush(
-                        new TextWebSocketFrame(
-                              "收信用户不在线"));
-                logger.info("收信用户不在线");
             }
             // 2 - 用户在线
             else {
                 try {
-                    receiveChannel.writeAndFlush(new TextWebSocketFrame(
-                            "<<<测试打印信息>>>  发送人："+senderId+"  发送信息：" + msgText));
+                    logger.info( "<<<测试打印信息>>>  发送人："+senderId+"  发送信息：" + msgText);
+
                     receiveChannel.writeAndFlush(new TextWebSocketFrame(
                             JsonUtils.objectToJson(dataContent)));
                     sign = MsgSignFlagEnum.signed.getType();
@@ -140,7 +130,7 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
 
         }else if (action == MsgActionEnum.KEEPALIVE.type) {
             //  2.4  心跳类型的消息
-//            System.out.println("收到来自channel为[" + currentChannel + "]的心跳包...");
+            System.out.println("收到来自channel为[" + currentChannel + "]的心跳包...");
         }
 
     }

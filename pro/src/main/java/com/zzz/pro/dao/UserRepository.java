@@ -25,6 +25,9 @@ public interface UserRepository {
      */
     UserPersonalInfo queryUserPerInfo(String id);
 
+
+
+
     /** TODO
      * @Description: 添加用户基础信息
      */
@@ -52,4 +55,7 @@ public interface UserRepository {
 
 
     UserPersonalInfo getMatchPerson(String  userId);
+
+
+    public List<UserPersonalInfo> getAll(UserPersonalInfo userPersonalInfo);
 }

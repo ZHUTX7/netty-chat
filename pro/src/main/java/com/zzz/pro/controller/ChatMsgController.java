@@ -5,6 +5,7 @@ import com.zzz.pro.pojo.dto.UserBaseInfo;
 import com.zzz.pro.pojo.result.SysJSONResult;
 import com.zzz.pro.service.ChatMsgService;
 import com.zzz.pro.utils.JWTUtils;
+import com.zzz.pro.utils.ResultVOUtil;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -20,12 +21,12 @@ public class ChatMsgController {
 
     //获取未签收消息
     @GetMapping("/getUnSignMsg")
-    public SysJSONResult getUnSignMsg(@RequestHeader("token") String token){
+    public SysJSONResult<List<ChatMsg>> getUnSignMsg(@RequestHeader("token") String token){
         String userId =  JWTUtils.getClaim(token,"userId");
         Map<String,Object> map  = new HashMap<>();
         List<ChatMsg> list = chatMsgService.getUnSignMsg(userId);
         map.put("messageList",list);
         map.put("sum",list.size());
-        return  SysJSONResult.ok(map);
+        return ResultVOUtil.success(map);
     }
 }

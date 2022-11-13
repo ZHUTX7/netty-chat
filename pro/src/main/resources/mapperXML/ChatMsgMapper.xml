@@ -23,7 +23,7 @@
 
   </update>
 
-  <select id="getUnSignMsg">
+  <select id="getUnSignMsg" resultType="java.util.Map"  parameterType="java.util.Map">
     SELECT  c.msg_id,c.accept_user_id,c.message,c.message_type,c.send_time,c.send_user_id
     FROM chat_msg c
     WHERE c.sign_flag=0

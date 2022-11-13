@@ -52,6 +52,7 @@ public class UserRepositoryImpl implements UserRepository {
         return userPersonalInfo != null ? userPersonalInfo : null;
     }
 
+
     @Override
     public int addUserBaseInfo(UserBaseInfo userBaseInfo) {
         return userBaseInfoMapper.insert(userBaseInfo);
@@ -134,6 +135,9 @@ public class UserRepositoryImpl implements UserRepository {
         return userPersonalInfoMapper.updateByPrimaryKeySelective(userPersonalInfo);
     }
 
-
+    @Override
+    public List<UserPersonalInfo> getAll(UserPersonalInfo userPersonalInfo){
+        return userPersonalInfoMapper.selectByExample(userPersonalInfo);
+    }
 
 }

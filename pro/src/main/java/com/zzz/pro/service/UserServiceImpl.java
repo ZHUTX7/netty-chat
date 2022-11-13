@@ -9,6 +9,7 @@ import com.zzz.pro.pojo.dto.UserPersonalInfo;
 import com.zzz.pro.pojo.result.SysJSONResult;
 import com.zzz.pro.utils.IDWorker;
 import com.zzz.pro.utils.JWTUtils;
+import com.zzz.pro.utils.ResultVOUtil;
 import io.netty.util.internal.StringUtil;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -36,13 +37,13 @@ public class UserServiceImpl implements UserService{
     public SysJSONResult userLogin(UserBaseInfo userBaseInfo) {
         // 1. 验证用户名是否存在
         if(!userRepository.queryPhoneIsExist(userBaseInfo.getUserPhone())){
-            return SysJSONResult.errorMsg("用户名不存在");
+            return ResultVOUtil.error(500,"用户名不存在");
         }
         // 2. 验证密码
         UserBaseInfo userBaseInfo1 =  userRepository.queryUserInfo(userBaseInfo.getUserPhone(),userBaseInfo.getUserPassword());
 
         if(userBaseInfo1 == null){
-            return SysJSONResult.errorMsg("密码错误。");
+            return ResultVOUtil.error(500,"密码错误");
         }
         //3. 获取用户信息
         UserPersonalInfo u = userRepository.queryUserPerInfo(userBaseInfo1.getUserId());
@@ -73,13 +74,13 @@ public class UserServiceImpl implements UserService{
             map.put("isMatch",0);
         }
 
-        return SysJSONResult.ok(map);
+        return ResultVOUtil.success(map);
     }
 
     @Override
     public SysJSONResult userRegister(UserBaseInfo userBaseInfo) {
         if(userRepository.queryPhoneIsExist(userBaseInfo.getUserPhone())){
-            return SysJSONResult.errorMsg("手机号被占用");
+            return ResultVOUtil.error(500,"手机号被占用");
         }
         userBaseInfo.setUserId(idWorker.nextId()+"");
         userRepository.addUserBaseInfo(userBaseInfo);
@@ -91,26 +92,27 @@ public class UserServiceImpl implements UserService{
         map.put("account",userBaseInfo);
         map.put("profile",userPersonalInfo);
         map.put("isMatch",0);
-        return SysJSONResult.ok(userBaseInfo,"用户注册成功");
+        return ResultVOUtil.success("用户注册成功",userBaseInfo);
     }
 
     @Override
     public SysJSONResult userIsExist(UserBaseInfo userBaseInfo) {
         if(userRepository.queryPhoneIsExist(userBaseInfo.getUserPhone())){
-            return SysJSONResult.errorMsg("手机号被占用");
+            return ResultVOUtil.error(500,"手机号被占用");
+
         }
 
-        return SysJSONResult.ok();
+        return ResultVOUtil.success();
     }
 
     @Override
     public SysJSONResult delUser(UserBaseInfo userBaseInfo) {
         int result =  userRepository.delUser(userBaseInfo);
         if(result == 1) {
-            return SysJSONResult.ok("删除成功");
+            return ResultVOUtil.success("删除成功");
         }
         else{
-            return SysJSONResult.errorMsg("删除失败，用户不存在");
+            return ResultVOUtil.error(500,"删除失败，用户不存在");
         }
 
     }
@@ -119,21 +121,22 @@ public class UserServiceImpl implements UserService{
     public SysJSONResult uploadFaceImg(UserPersonalInfo userPersonalInfo) {
         int result =    userRepository.updateUserFace(userPersonalInfo);
         if(result == 1) {
-            return SysJSONResult.ok("更新头像成功");
+            return ResultVOUtil.success("更新头像成功");
         }
         else{
-            return SysJSONResult.errorMsg("更新头像失败");
+            return ResultVOUtil.error(500,"更新头像失败");
         }
     }
 
     @Override
     public SysJSONResult userLoginByToken(String token) {
         if(StringUtil.isNullOrEmpty(token)){
-            return SysJSONResult.errorMsg("用户登录状态过期");
+
+            return  ResultVOUtil.error(500,"用户登录状态过期");
         }
         int token_code =  (int)JWTUtils.verify(token).get("token_code");
         if(token_code != 1 ){
-            return SysJSONResult.errorMsg("用户登录状态过期");
+            return ResultVOUtil.error(500,"用户登录状态过期");
         }
         String userId = JWTUtils.getClaim(token,"userId");
         UserPersonalInfo u = userRepository.queryUserPerInfo(userId);
@@ -143,14 +146,14 @@ public class UserServiceImpl implements UserService{
         map.put("userId",u.getUserId());
         map.put("token",token);
         map.put("userPersonalInfo",u);
-        return SysJSONResult.ok(map);
+        return ResultVOUtil.success(map);
 
     }
 
     @Override
     public SysJSONResult updateUserProfile(UserPersonalInfo userPersonalInfo) {
       int result =  userRepository.updateUserProfile(userPersonalInfo);
-      return SysJSONResult.ok(null,"更新用户资料成功");
+      return ResultVOUtil.success(null,"更新用户资料成功");
     }
 
 
@@ -162,10 +165,10 @@ public class UserServiceImpl implements UserService{
             chatMsg.setAcceptUserId(userBaseInfo.getUserId());
             chatMsg.setSignFlag(0);
             List<ChatMsg> list = chatMsgRepository.getMsg(chatMsg);
-            return SysJSONResult.ok(list,"查询成功！");
+            return ResultVOUtil.success(list);
 
         }catch (Exception e){
-            return SysJSONResult.ok("查询失败～");
+            return ResultVOUtil.error(500,"查询失败～");
         }
 
     }

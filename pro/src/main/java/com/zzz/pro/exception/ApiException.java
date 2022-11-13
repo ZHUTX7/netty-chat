@@ -14,4 +14,16 @@ public class ApiException extends RuntimeException {
         log.error("调用API错误 : "+sysJSONResult.getMsg());
     }
 
+    public ApiException() {
+        this.sysJSONResult = new SysJSONResult();
+        sysJSONResult.setMsg("调用错误");
+        sysJSONResult.setStatus(500);
+    }
+
+    public ApiException(Integer code,String msg){
+        this.sysJSONResult = new SysJSONResult();
+        sysJSONResult.setStatus(code);
+        sysJSONResult.setMsg(msg);
+    }
+
 }

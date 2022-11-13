@@ -11,6 +11,7 @@ import com.zzz.pro.pojo.vo.RegisterVO;
 import com.zzz.pro.service.UserService;
 import com.zzz.pro.utils.Img2Base64;
 import com.zzz.pro.utils.JWTUtils;
+import com.zzz.pro.utils.ResultVOUtil;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -47,7 +48,7 @@ public class UserController {
              case "NORMAL":return userService.userLogin(loginDTO.getLoginParams());
              case "VERIFY":return userService.userLoginByToken(token);
             // case "TOKEN":loginDTO.getLoginParams().get;;break;
-             default:return SysJSONResult.errorMsg("登录类型不存在");
+             default:return ResultVOUtil.error(401,"登录类型不存在");
          }
 
     }
@@ -64,7 +65,7 @@ public class UserController {
             case "NORMAL":return userService.userLogin(loginDTO.getLoginParams());
             case "VERIFY":return userService.userLoginByToken(token);
             // case "TOKEN":loginDTO.getLoginParams().get;;break;
-            default:return SysJSONResult.errorMsg("登录类型不存在");
+            default:return ResultVOUtil.error(401,"登录类型不存在");
         }
 
     }
@@ -89,7 +90,7 @@ public class UserController {
     @PostMapping("/register")
     public SysJSONResult register(@RequestBody RegisterVO registerVO){
         if(!registerVO.getVerifyCode().equals("6666")){
-            return SysJSONResult.errorMsg("验证码错误");
+            return ResultVOUtil.error(401,"验证码错误");
         }
         System.out.printf(registerVO.getUserPhone());
         System.out.println(registerVO.getPassword());
@@ -124,7 +125,7 @@ public class UserController {
     public SysJSONResult uploadFaceImageFile(@RequestParam("files") MultipartFile files,HttpServletRequest request) throws IOException {
         String userId =  request.getParameter("userId");
         if(files.isEmpty()||files.getSize()==0||files.getInputStream()==null){
-            return SysJSONResult.errorMsg("头像文件为空！");
+            return ResultVOUtil.error(401,"头像文件为空！");
         }
         String base64Data =  Img2Base64.getImageInput(files.getInputStream());
         UserPersonalInfo userPersonalInfo = new UserPersonalInfo();
