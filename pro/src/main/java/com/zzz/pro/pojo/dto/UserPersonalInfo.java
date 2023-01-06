@@ -1,6 +1,7 @@
 package com.zzz.pro.pojo.dto;
 
 import lombok.Data;
+import org.springframework.stereotype.Component;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -8,6 +9,7 @@ import javax.persistence.Table;
 
 @Data
 @Table(name = "user_personal_info")
+@Component
 public class UserPersonalInfo {
     /**
      * 用户ID

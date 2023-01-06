@@ -2,15 +2,16 @@ package com.zzz.pro.service;
 
 import com.zzz.pro.dao.ChatMsgRepository;
 import com.zzz.pro.dao.UserRepository;
-import com.zzz.pro.pojo.dto.ChatMsg;
-import com.zzz.pro.pojo.dto.UserBaseInfo;
-import com.zzz.pro.pojo.dto.UserMatch;
-import com.zzz.pro.pojo.dto.UserPersonalInfo;
+import com.zzz.pro.dao.UserTagRepository;
+import com.zzz.pro.exception.ApiException;
+import com.zzz.pro.pojo.dto.*;
 import com.zzz.pro.pojo.result.SysJSONResult;
+import com.zzz.pro.pojo.vo.UserTagVO;
 import com.zzz.pro.utils.IDWorker;
 import com.zzz.pro.utils.JWTUtils;
 import com.zzz.pro.utils.ResultVOUtil;
 import io.netty.util.internal.StringUtil;
+import org.springframework.beans.BeanUtils;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -18,15 +19,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService{
 
     @Resource
     private UserRepository userRepository;
+    @Resource
+    private UserTagRepository userTagRepository;
 
     @Resource
     private ChatMsgRepository chatMsgRepository;
@@ -173,5 +178,42 @@ public class UserServiceImpl implements UserService{
 
     }
 
+    @Override
+    public void updateUserTag(UserTag userTag) {
+        userTagRepository.updateUserTag(userTag);
+    }
 
+
+    @Override
+    public List<UserTagVO>  queryUserTag(String userId) {
+        List<UserTag > list = userTagRepository.queryUserTag(userId);
+        List<UserTagVO> result = list.stream().map(e->{
+            UserTagVO vo = new UserTagVO();
+            BeanUtils.copyProperties(e,vo);
+            return vo;
+        }).collect(Collectors.toList());
+
+        return result;
+    }
+
+    @Override
+    public void addUserTag(UserTag userTag) {
+        try{
+            userTagRepository.insertUserTag(userTag);
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new ApiException(401,"数据错误");
+        }
+
+    }
+
+    @Override
+    public void clearUserTag(UserTag userTag) {
+        try{
+            userTagRepository.delUserTag(userTag.getUserId(),userTag.getUserKey());
+        }catch (Exception e){
+            throw new ApiException(401,"数据错误");
+        }
+
+    }
 }

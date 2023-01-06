@@ -6,12 +6,14 @@ import com.zzz.pro.pojo.bo.UserBO;
 import com.zzz.pro.pojo.dto.UserBaseInfo;
 import com.zzz.pro.pojo.dto.UserMatch;
 import com.zzz.pro.pojo.dto.UserPersonalInfo;
+import com.zzz.pro.pojo.dto.UserTag;
 import com.zzz.pro.pojo.result.SysJSONResult;
 import com.zzz.pro.pojo.vo.RegisterVO;
 import com.zzz.pro.service.UserService;
 import com.zzz.pro.utils.Img2Base64;
 import com.zzz.pro.utils.JWTUtils;
 import com.zzz.pro.utils.ResultVOUtil;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -54,7 +56,7 @@ public class UserController {
     }
 
 
-
+    //TODO  tag 
     @PostMapping("/profile")
     public SysJSONResult profile(@RequestBody LoginDTO loginDTO,@RequestHeader("token") String token){
 
@@ -152,5 +154,27 @@ public class UserController {
         return  userService.delUser(userBaseInfo);
     }
 
+    @PostMapping("/updateUserTag")
+    public SysJSONResult updateUserTag(@RequestBody UserTag userTag){
+        userService.updateUserTag(userTag);
+        return  ResultVOUtil.success();
+    }
+
+    @PostMapping("/addUserTag")
+    public SysJSONResult addUserTag(@RequestBody UserTag userTag){
+        userService.addUserTag(userTag);
+        return  ResultVOUtil.success();
+    }
+
+    @GetMapping("/queryUserTag")
+    public SysJSONResult queryUserTag(@Param("userId") String userId){
+        return  ResultVOUtil.success(userService.queryUserTag(userId));
+    }
+
+    @PostMapping("/clearUserTag")
+    public SysJSONResult clearUserTag(@RequestBody UserTag userTag){
+        userService.clearUserTag(userTag);
+        return  ResultVOUtil.success();
+    }
 
 }

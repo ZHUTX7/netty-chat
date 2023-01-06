@@ -31,11 +31,11 @@ public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
                 System.out.println("进入写空闲...");
             } else if (event.state() == IdleState.ALL_IDLE) {
 
-                logger.debug("channel关闭前，users的数量为：" + ChatHandler.users.size());
+                logger.debug("channel关闭前，users的数量为：" + MsgHandler.users.size());
                 Channel channel = ctx.channel();
                 // 关闭无用的channel，以防资源浪费
                 channel.close();
-                logger.debug("channel关闭后，users的数量为：" + ChatHandler.users.size());
+                logger.debug("channel关闭后，users的数量为：" + MsgHandler.users.size());
             }
         }
 

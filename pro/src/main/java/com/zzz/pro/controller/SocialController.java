@@ -5,7 +5,7 @@ import com.zzz.pro.pojo.dto.UserMatch;
 import com.zzz.pro.pojo.form.UserFilterForm;
 import com.zzz.pro.pojo.result.SysJSONResult;
 import com.zzz.pro.pojo.vo.UserProfileVO;
-import com.zzz.pro.service.FriendsService;
+import com.zzz.pro.service.SocialService;
 import com.zzz.pro.utils.JWTUtils;
 import com.zzz.pro.utils.ResultVOUtil;
 import org.springframework.web.bind.annotation.*;
@@ -15,17 +15,17 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/friends")
-public class FriendsController {
+public class SocialController {
 
     @Resource
-    private  FriendsService friendsService;
+    private SocialService socialService;
 
 
     //开始匹配
     @GetMapping("/match")
     public SysJSONResult match(@RequestHeader("token") String token){
         String userId =  JWTUtils.getClaim(token,"userId");
-        friendsService.match(userId);
+        socialService.match(userId);
         return ResultVOUtil.success("正在匹配 ~");
     }
 
@@ -33,7 +33,7 @@ public class FriendsController {
     @GetMapping("/stopMatch")
     public SysJSONResult stopMatch(@RequestHeader("token") String token){
         String userId =  JWTUtils.getClaim(token,"userId");
-        friendsService.stopMatch(userId);
+        socialService.stopMatch(userId);
         return ResultVOUtil.success("停止匹配 ~");
     }
 
@@ -41,24 +41,26 @@ public class FriendsController {
     @PostMapping("/delMatch")
     public SysJSONResult delMatch(@RequestBody UserMatch userMatch, @RequestHeader("token") String token){
         userMatch.setMyUserId(JWTUtils.getClaim(token,"userId"));
-        friendsService.delMatch(userMatch);
+        socialService.delMatch(userMatch);
         return  ResultVOUtil.success("解除匹配成功");
     }
 
-    //查询匹配到的对象
+    // TODO  返回List 查询匹配到的对象
     @GetMapping("/getMatchPerson")
     public SysJSONResult getMatchPerson(@RequestHeader("token") String token){
         String userId =  JWTUtils.getClaim(token,"userId");
         UserBaseInfo u = new UserBaseInfo();
         u.setUserId(userId);
-        return  ResultVOUtil.success(friendsService.getMatchPerson(u));
+        return  ResultVOUtil.success(socialService.getMatchPerson(u));
     }
 
 
-    //推送匹配用户
+    //推送匹配用）
     @PostMapping("/queryMatchingUser")
-    public SysJSONResult queryMatchingUser(@RequestBody UserFilterForm userFilterForm){
-        List<UserProfileVO>  list = friendsService.pushMatchUserList(userFilterForm);
+    public SysJSONResult queryMatchingUser(@RequestHeader("token") String token,@RequestBody UserFilterForm userFilterForm){
+        String userId =  JWTUtils.getClaim(token,"userId");
+
+        List<UserProfileVO>  list = socialService.pushMatchUserList(userFilterForm,userId);
         return  ResultVOUtil.success(list);
     }
 
@@ -66,7 +68,7 @@ public class FriendsController {
     @PostMapping("/boost")
     public SysJSONResult boost(@RequestHeader("token") String token,@RequestBody String targetUserId){
         String userId =  JWTUtils.getClaim(token,"userId");
-        friendsService.boostMatch(userId,targetUserId);
+        socialService.boostMatch(userId,targetUserId);
         return  ResultVOUtil.success();
     }
 
@@ -74,7 +76,19 @@ public class FriendsController {
     @PostMapping("/unBoost")
     public SysJSONResult unBoost(@RequestHeader("token") String token,@RequestBody String targetUserId){
         String userId =  JWTUtils.getClaim(token,"userId");
-        friendsService.boostMatch(userId,targetUserId);
+        socialService.boostMatch(userId,targetUserId);
+        return  ResultVOUtil.success();
+    }
+
+    //TODO 完成约会
+    @PostMapping("/dating/complete")
+    public SysJSONResult complete(){
+        return  ResultVOUtil.success();
+    }
+
+    //提出约会/同意约会
+    @PostMapping("/dating/accept")
+    public SysJSONResult acceptDating(){
         return  ResultVOUtil.success();
     }
 

@@ -26,4 +26,7 @@ public class ApiException extends RuntimeException {
         sysJSONResult.setMsg(msg);
     }
 
+    public SysJSONResult getSysJSONResult() {
+        return sysJSONResult;
+    }
 }

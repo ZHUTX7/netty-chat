@@ -5,13 +5,10 @@ com/zzz/pro/pojo/dto/ChatMsg.class
 com/zzz/pro/dao/UserRepository.class
 com/zzz/pro/dao/ChatMsgRepository.class
 com/zzz/pro/utils/JWTUtils.class
-com/zzz/pro/netty/handler/ChatHandler.class
 com/zzz/pro/service/UserServiceImpl.class
 com/zzz/pro/service/FriendsService.class
 com/zzz/pro/controller/ChatMsgController.class
-com/zzz/pro/dao/UserRepositoryImpl.class
 com/zzz/pro/service/FriendsServiceImpl.class
-com/zzz/pro/service/ChatMsgServiceImpl.class
 com/zzz/pro/enums/MsgActionEnum.class
 com/zzz/pro/utils/IDWorker.class
 com/zzz/pro/utils/MyMapper.class

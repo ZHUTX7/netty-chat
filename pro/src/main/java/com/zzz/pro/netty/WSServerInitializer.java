@@ -1,7 +1,8 @@
 package com.zzz.pro.netty;
 
-import com.zzz.pro.netty.handler.ChatHandler;
+
 import com.zzz.pro.netty.handler.HeartBeatHandler;
+import com.zzz.pro.netty.handler.MsgHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -55,7 +56,7 @@ public class WSServerInitializer extends ChannelInitializer<SocketChannel> {
         pipeline.addLast(new WebSocketServerProtocolHandler("/ws"));
 
         // 自定义的handler
-        pipeline.addLast(new ChatHandler());
+        pipeline.addLast(new MsgHandler());
     }
 
 

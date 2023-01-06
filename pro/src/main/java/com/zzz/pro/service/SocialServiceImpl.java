@@ -1,16 +1,16 @@
 package com.zzz.pro.service;
 
+import com.zzz.pro.dao.UserDatingRepository;
+import com.zzz.pro.dao.UserFriendsRepo;
 import com.zzz.pro.dao.UserRepository;
 import com.zzz.pro.enums.RedisKeyEnum;
 import com.zzz.pro.exception.ApiException;
-import com.zzz.pro.pojo.dto.UserBaseInfo;
-import com.zzz.pro.pojo.dto.UserMatch;
-import com.zzz.pro.pojo.dto.UserPersonalInfo;
+import com.zzz.pro.pojo.dto.*;
 import com.zzz.pro.pojo.form.UserFilterForm;
 import com.zzz.pro.pojo.result.SysJSONResult;
+import com.zzz.pro.pojo.vo.DatingStatusVO;
 import com.zzz.pro.pojo.vo.UserProfileVO;
 import com.zzz.pro.utils.ResultVOUtil;
-import io.netty.util.internal.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Bean;
@@ -21,20 +21,25 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class FriendsServiceImpl implements FriendsService{
+public class SocialServiceImpl implements SocialService{
 
     @Resource
     UserRepository userRepository;
 
     @Resource
+    UserDatingRepository userDatingRepository;
+    @Resource
     RedisTemplate redisTemplate;
-
+    @Resource
+    UserFriendsRepo userFriendsRepo;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
@@ -42,9 +47,17 @@ public class FriendsServiceImpl implements FriendsService{
         //确认该用户是否已经有建立匹配关系的对象
         UserBaseInfo user = new UserBaseInfo();
         user.setUserId(userId);
+
+        if(redisTemplate.opsForHash().get(RedisKeyEnum.BOYS_WAITING_POOL.getCode(),user.getUserId())!=null
+                || redisTemplate.opsForHash().get(RedisKeyEnum.GIRLS_WAITING_POOL.getCode(),user.getUserId())!=null ){
+            return;
+        }
+
         if( ! ObjectUtils.isEmpty(userRepository.queryUserMatch(user))){
             throw new ApiException(500,"已经有匹配对象啦～ 好好聊吧");
         }
+
+
         UserPersonalInfo userPersonalInfo = userRepository.queryUserPerInfo(user.getUserId());
         UserProfileVO userProfileVO = new UserProfileVO();
 
@@ -69,7 +82,7 @@ public class FriendsServiceImpl implements FriendsService{
 
     //不在线的用户给不给他推荐？？
     @Override
-    public List<UserProfileVO> pushMatchUserList(UserFilterForm userFilterForm) {
+    public List<UserProfileVO> pushMatchUserList(UserFilterForm userFilterForm,String userId) {
         int pushUserCount = 30;
         List<UserProfileVO> list = new ArrayList<>();
         if(userFilterForm.getSex()==1){
@@ -84,6 +97,20 @@ public class FriendsServiceImpl implements FriendsService{
 //                }
                 list.add(entry.getValue());
             }
+            //如果推送数量不够，拿离线用户补
+            if(list.size()<30){
+               List<UserPersonalInfo> u=   userRepository.queryUnMatchUserList(userId).stream().filter(
+                       e ->  (!userMap.containsKey( e.getUserId())
+               )).collect(Collectors.toList());
+
+               u.stream().forEach(e->{
+                   UserProfileVO vo = new UserProfileVO();
+                   BeanUtils.copyProperties(e,vo);
+                   list.add(vo);
+               });
+            }
+            return list;
+
 
         }else{
             Map<String,UserProfileVO> userMap = redisTemplate.opsForHash().entries(RedisKeyEnum.BOYS_WAITING_POOL.getCode());
@@ -109,7 +136,8 @@ public class FriendsServiceImpl implements FriendsService{
             }
 
             u.setUserSex(findUserSex);
-            List<UserPersonalInfo> allUser =  userRepository.getAll(u);
+
+            List<UserPersonalInfo> allUser =  userRepository.getAllByExample(u);
 
             BeanUtils.copyProperties(allUser,list);
 
@@ -136,11 +164,21 @@ public class FriendsServiceImpl implements FriendsService{
     }
 
     @Override
+    public void delBlackUserList(String userId) {
+        redisTemplate.delete(RedisKeyEnum.DISLIKE_USER_POOL.getCode()+userId);
+    }
+
+
+    @Override
+    public void addBlackUserList(String userId, List<String> targetUserIds){
+        redisTemplate.opsForSet().add(RedisKeyEnum.DISLIKE_USER_POOL.getCode()+userId,targetUserIds);
+    }
+
+
+    @Override
     @Transactional(propagation = Propagation.REQUIRED)
     public UserPersonalInfo getMatchPerson(UserBaseInfo userBaseInfo) {
-
         return userRepository.getMatchPerson(userBaseInfo.getUserId());
-
     }
 
     @Override
@@ -167,5 +205,90 @@ public class FriendsServiceImpl implements FriendsService{
         redisTemplate.opsForHash().put(RedisKeyEnum.DISLIKE_USER_POOL.getCode()+"userId",targetId,1);
     }
 
+
+
+    @Override
+    public void acceptDating(String userId, String targetId) {
+        String datingId = userId + targetId;
+        datingId ="dat"+  datingId.hashCode();
+        UserDating example = new UserDating();
+        example.setUserId(userId);
+        example.setUserTargetId(targetId);
+        example.setDatingId(datingId);
+        // 查询约会状态
+        UserDating dating = userDatingRepository.queryDating(example);
+        if(ObjectUtils.isEmpty(dating)){
+            example.setDatingId(datingId);
+            return;
+        }
+        String status = dating.getStatus();
+
+        // 1. 对方已经同意
+        if(status.equals(userId)){
+            dating.setStatus("both");
+            userDatingRepository.updateDating(dating);
+        }
+        // 2. 仅自己同意 - return
+        // 3. 双方全部同意
+        else {
+            return;
+        }
+    }
+
+    @Override
+    public void completeDating(String userId, String targetId) {
+        //添加到好友列表
+        //userFriendsMapper.add(xxxx)
+    }
+
+    @Override
+    public DatingStatusVO queryDatingStatus(String userId, String targetId) {
+        String datingId = userId + targetId;
+        datingId ="dat"+  datingId.hashCode();
+        UserDating example = new UserDating();
+        example.setUserId(userId);
+        example.setUserTargetId(targetId);
+        example.setDatingId(datingId);
+        // 查询约会状态
+        UserDating dating = userDatingRepository.queryDating(example);
+        DatingStatusVO vo = new DatingStatusVO();
+
+        if(dating.getStatus().equals(targetId)){
+            vo.setStatus(2);
+            vo.setMsg("对方提出约会邀请～");
+        }else if(dating.getStatus().equals(userId)){
+            vo.setStatus(1);
+            vo.setMsg("等待对方接受邀请～");
+        }else {
+            vo.setStatus(0);
+            vo.setMsg("快发起约会邀请～");
+        }
+        return vo;
+
+    }
+
+    @Override
+    public void makeFriendsRel(String userId, String targetId) {
+        UserFriends userFriends = new UserFriends();
+        userFriends.setUserId(userId);
+        userFriends.setFriendsId(targetId);
+        userFriends.setFriendsStatus(2);
+        userFriendsRepo.addFriends(userFriends);
+    }
+
+    @Override
+    public void queryFriendsList(String userId) {
+
+    }
+
+    @Override
+    public void removeFriendsRel(String userId, String targetId) {
+
+    }
+
+    @Override
+    public void delFriendsData(String userId, String targetId) {
+
+    }
 
 }
