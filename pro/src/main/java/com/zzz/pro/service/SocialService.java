@@ -6,6 +6,7 @@ import com.zzz.pro.pojo.dto.UserPersonalInfo;
 import com.zzz.pro.pojo.form.UserFilterForm;
 import com.zzz.pro.pojo.result.SysJSONResult;
 import com.zzz.pro.pojo.vo.DatingStatusVO;
+import com.zzz.pro.pojo.vo.FriendsVO;
 import com.zzz.pro.pojo.vo.UserProfileVO;
 
 import java.util.List;
@@ -49,7 +50,7 @@ public interface SocialService {
     //建立好友关系
     void makeFriendsRel(String userId ,String targetId);
     //查询好友关系
-    void queryFriendsList(String userId );
+    List<FriendsVO> queryFriendsList(String userId );
     //移除好友
     void removeFriendsRel(String userId ,String targetId);
     //删除好友数据

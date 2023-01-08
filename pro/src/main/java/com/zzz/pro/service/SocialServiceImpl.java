@@ -9,6 +9,7 @@ import com.zzz.pro.pojo.dto.*;
 import com.zzz.pro.pojo.form.UserFilterForm;
 import com.zzz.pro.pojo.result.SysJSONResult;
 import com.zzz.pro.pojo.vo.DatingStatusVO;
+import com.zzz.pro.pojo.vo.FriendsVO;
 import com.zzz.pro.pojo.vo.UserProfileVO;
 import com.zzz.pro.utils.ResultVOUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,7 @@ import org.springframework.util.StringUtils;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -237,8 +239,12 @@ public class SocialServiceImpl implements SocialService{
 
     @Override
     public void completeDating(String userId, String targetId) {
+        String datingId = userId + targetId;
+        datingId ="dat"+  datingId.hashCode();
+        //删除约会数据
+        userDatingRepository.delDatingData(datingId);
         //添加到好友列表
-        //userFriendsMapper.add(xxxx)
+        makeFriendsRel(userId,targetId);
     }
 
     @Override
@@ -251,6 +257,9 @@ public class SocialServiceImpl implements SocialService{
         example.setDatingId(datingId);
         // 查询约会状态
         UserDating dating = userDatingRepository.queryDating(example);
+        if(ObjectUtils.isEmpty(dating)){
+            throw new ApiException(401,"数据错误，两人之间并无匹配");
+        }
         DatingStatusVO vo = new DatingStatusVO();
 
         if(dating.getStatus().equals(targetId)){
@@ -273,11 +282,28 @@ public class SocialServiceImpl implements SocialService{
         userFriends.setUserId(userId);
         userFriends.setFriendsId(targetId);
         userFriends.setFriendsStatus(2);
+        userFriends.setCreatTime(new Timestamp(new Date().getTime()));
         userFriendsRepo.addFriends(userFriends);
     }
 
     @Override
-    public void queryFriendsList(String userId) {
+    public List<FriendsVO> queryFriendsList(String userId) {
+      List<String> friendsIds =  userFriendsRepo.queryFriendsId(userId);
+      if(CollectionUtils.isEmpty(friendsIds)){
+          return null;
+      }
+      List<Map >  list = userRepository.queryUnMatchUserList(friendsIds);
+
+      if(CollectionUtils.isEmpty(list)){
+        return null;
+      }
+
+      return list.stream().map(e->{
+        FriendsVO vo = new FriendsVO();
+        vo.setUserId((String)e.get("user_id"));
+        vo.setUserImage((String)e.get("user_nickname"));
+        vo.setUserNickName((String)e.get("user_face_image"));
+        return vo;}).collect(Collectors.toList());
 
     }
 

@@ -14,6 +14,7 @@ import javax.annotation.Resource;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class UserRepository {
@@ -91,6 +92,10 @@ public class UserRepository {
     public List<UserPersonalInfo> queryUnMatchUserList(String userId) {
         return userMatchMapper.queryUnMatchUserList(userId);
     }
+    public List<Map> queryUnMatchUserList(List<String> userIdList) {
+        return userPersonalInfoMapper.queryUserOutlineInfo(userIdList);
+    }
+
 
     public int addMatchUsers(UserMatch userMatch) {
         return userMatchMapper.insert(userMatch);

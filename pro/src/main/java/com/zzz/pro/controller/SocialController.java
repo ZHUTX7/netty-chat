@@ -8,6 +8,7 @@ import com.zzz.pro.pojo.vo.UserProfileVO;
 import com.zzz.pro.service.SocialService;
 import com.zzz.pro.utils.JWTUtils;
 import com.zzz.pro.utils.ResultVOUtil;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -65,31 +66,57 @@ public class SocialController {
     }
 
     ///确认匹配
-    @PostMapping("/boost")
-    public SysJSONResult boost(@RequestHeader("token") String token,@RequestBody String targetUserId){
+    @GetMapping("/boost")
+    public SysJSONResult boost(@RequestHeader("token") String token,@Param("targetId") String targetId){
         String userId =  JWTUtils.getClaim(token,"userId");
-        socialService.boostMatch(userId,targetUserId);
+        socialService.boostMatch(userId,targetId);
         return  ResultVOUtil.success();
     }
 
     //取消匹配
-    @PostMapping("/unBoost")
-    public SysJSONResult unBoost(@RequestHeader("token") String token,@RequestBody String targetUserId){
+    @GetMapping("/unBoost")
+    public SysJSONResult unBoost(@RequestHeader("token") String token,@Param("targetId") String targetId){
         String userId =  JWTUtils.getClaim(token,"userId");
-        socialService.boostMatch(userId,targetUserId);
+        socialService.boostMatch(userId,targetId);
         return  ResultVOUtil.success();
     }
 
     //TODO 完成约会
-    @PostMapping("/dating/complete")
-    public SysJSONResult complete(){
+    @GetMapping("/dating/complete")
+    public SysJSONResult complete(@RequestHeader("token") String token,@Param("targetId") String targetId){
+        String userId =  JWTUtils.getClaim(token,"userId");
+        socialService.completeDating(userId,targetId);
         return  ResultVOUtil.success();
     }
 
+    //查看约会状态
+    @GetMapping("/dating/query")
+    public SysJSONResult queryDatingStatus(@RequestHeader("token") String token,@Param("targetId") String targetId){
+        String userId =  JWTUtils.getClaim(token,"userId");
+      ;
+        return  ResultVOUtil.success(socialService.queryDatingStatus(userId,targetId));
+    }
     //提出约会/同意约会
-    @PostMapping("/dating/accept")
-    public SysJSONResult acceptDating(){
+    @GetMapping("/dating/accept")
+    public SysJSONResult acceptDating(@RequestHeader("token") String token,@Param("targetId") String targetId){
+        String userId =  JWTUtils.getClaim(token,"userId");
+        socialService.acceptDating(userId,targetId);
         return  ResultVOUtil.success();
     }
+
+    //    查询好友
+    @GetMapping("/queryFriends")
+    public SysJSONResult queryFriends(@RequestHeader("token") String token){
+        String userId =  JWTUtils.getClaim(token,"userId");
+        return  ResultVOUtil.success(socialService.queryFriendsList(userId));
+    }
+
+    //删除好友
+    @PostMapping("/removeFriends")
+    public SysJSONResult removeFriends(@RequestHeader("token") String token){
+        String userId =  JWTUtils.getClaim(token,"userId");
+        return  ResultVOUtil.success(socialService.queryFriendsList(userId));
+    }
+
 
 }

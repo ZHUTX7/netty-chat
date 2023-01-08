@@ -17,7 +17,7 @@ import com.zzz.pro.pojo.bo.WebSocketMsg;
 import com.zzz.pro.pojo.form.UserFilterForm;
 import com.zzz.pro.pojo.vo.UserProfileVO;
 import com.zzz.pro.service.ChatMsgService;
-import com.zzz.pro.service.FriendsService;
+import com.zzz.pro.service.SocialService;
 import com.zzz.pro.task.Msg2Kafka;
 import com.zzz.pro.utils.*;
 import io.netty.channel.Channel;
@@ -140,9 +140,9 @@ public class MsgHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> 
             userFilterForm.setPos("111");
 
            // UserFilterForm userFilterForm= JsonUtils.jsonToPojo(dataContent.getExpand(), UserFilterForm.class);
-            FriendsService friendsService  = (FriendsService) SpringUtil.getBean("friendsServiceImpl");
+            SocialService socialService  = (SocialService) SpringUtil.getBean("socialServiceImpl");
             //进入匹配池  (1次推30人，30人都确认完喜欢不喜欢后，统一调用接口，批量把不喜欢的用户插入黑名单）
-            List<UserProfileVO> userProfileVOS =  friendsService.pushMatchUserList(userFilterForm,sendUserId);
+            List<UserProfileVO> userProfileVOS =  socialService.pushMatchUserList(userFilterForm,sendUserId);
             PushUserListBO pushUserListBO = new PushUserListBO();
             pushUserListBO.setMsg(userProfileVOS);
             pushUserListBO.setAction(6);
