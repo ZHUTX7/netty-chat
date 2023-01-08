@@ -21,4 +21,14 @@
     <result column="user_face_image" property="userFaceImage" jdbcType="VARCHAR" />
     <result column="user_face_image_big" property="userFaceImageBig" jdbcType="VARCHAR" />
   </resultMap>
+
+  <select id="queryUserOutlineInfo" resultType="java.util.Map"  parameterType="java.util.Map">
+    SELECT
+    user_id , user_nickname ,user_face_image
+    from user_personal_info
+    WHERE user_id IN
+    <foreach collection="list" item="user_id" index="index" open="(" close=")" separator=",">
+      #{user_id}
+    </foreach>
+  </select>
 </mapper>
