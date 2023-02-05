@@ -38,6 +38,13 @@ public class SocialController {
         return ResultVOUtil.success("停止匹配 ~");
     }
 
+    //查看匹配状态
+    @GetMapping("/queryMatchStatus")
+    public SysJSONResult queryMatchStatus(@RequestHeader("token") String token){
+        String userId =  JWTUtils.getClaim(token,"userId");
+        return ResultVOUtil.success(socialService.queryMatchStatus(userId));
+    }
+
     //解除已经匹配的对象
     @PostMapping("/delMatch")
     public SysJSONResult delMatch(@RequestBody UserMatch userMatch, @RequestHeader("token") String token){

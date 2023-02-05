@@ -56,7 +56,7 @@ public class SocialServiceImpl implements SocialService{
         }
 
         if( ! ObjectUtils.isEmpty(userRepository.queryUserMatch(user))){
-            throw new ApiException(500,"已经有匹配对象啦～ 好好聊吧");
+            throw new ApiException(200,"已经有匹配对象啦～ 好好聊吧");
         }
 
 
@@ -81,6 +81,19 @@ public class SocialServiceImpl implements SocialService{
         log.info("用户ID{}停止匹配",userId);
     }
 
+    @Override
+    public Map<String,String> queryMatchStatus(String userId) {
+        Map<String,String> map = new HashMap<>();
+       if(redisTemplate.opsForHash().hasKey(RedisKeyEnum.BOYS_WAITING_POOL.getCode(),userId)
+         ||redisTemplate.opsForHash().hasKey(RedisKeyEnum.GIRLS_WAITING_POOL.getCode(),userId) ) {
+            map.put("matchStatus","on");
+       }
+       else{
+           map.put("matchStatus","off");
+       }
+       return map;
+    }
+
 
     //不在线的用户给不给他推荐？？
     @Override
@@ -92,11 +105,14 @@ public class SocialServiceImpl implements SocialService{
             //根据筛选条件计算
             for(Map.Entry<String,UserProfileVO> entry : userMap.entrySet()){
                 //TODO 筛选测试阶段关闭
-//                String userId = entry.getValue().getUserId();
+                if(userId == entry.getValue().getUserId()){
+                    continue;
+                }
 //                boolean isDislikeUser = redisTemplate.opsForHash().hasKey(RedisKeyEnum.DISLIKE_USER_POOL.getCode()+"userId",userId);
 //                if(isDislikeUser){
 //                    continue;
 //                }
+//
                 list.add(entry.getValue());
             }
             //如果推送数量不够，拿离线用户补

@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.zzz.pro.enums.MsgActionEnum;
 import com.zzz.pro.enums.MsgSignFlagEnum;
@@ -29,6 +30,7 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 
 /**
  * @author ztx
@@ -141,13 +143,23 @@ public class MsgHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> 
 
            // UserFilterForm userFilterForm= JsonUtils.jsonToPojo(dataContent.getExpand(), UserFilterForm.class);
             SocialService socialService  = (SocialService) SpringUtil.getBean("socialServiceImpl");
-            //进入匹配池  (1次推30人，30人都确认完喜欢不喜欢后，统一调用接口，批量把不喜欢的用户插入黑名单）
+            //进入匹配池  (1次推30人，30人都确认完喜欢不喜欢后，统一调用接口，批量把不喜欢的用户插入黑名单。同时
+            // 客户端继续发送WS请求，服务端接着给用户推）
             List<UserProfileVO> userProfileVOS =  socialService.pushMatchUserList(userFilterForm,sendUserId);
-            PushUserListBO pushUserListBO = new PushUserListBO();
-            pushUserListBO.setMsg(userProfileVOS);
-            pushUserListBO.setAction(6);
-            currentChannel.writeAndFlush(new TextWebSocketFrame(
-                    JsonUtils.objectToJson(pushUserListBO)));
+            if(CollectionUtils.isEmpty(userProfileVOS)){
+                Map<String,String> map = new HashMap<>();
+                map.put("msg","暂时没有可匹配用户～");
+                currentChannel.writeAndFlush(new TextWebSocketFrame(
+                        JsonUtils.objectToJson(map)));
+            }else {
+                PushUserListBO pushUserListBO = new PushUserListBO();
+                pushUserListBO.setMsg(userProfileVOS);
+                pushUserListBO.setAction(6);
+                currentChannel.writeAndFlush(new TextWebSocketFrame(
+                        JsonUtils.objectToJson(pushUserListBO)));
+            }
+
+
         }
 
 

@@ -1,6 +1,7 @@
 com/zzz/pro/netty/enity/DataContent.class
 com/zzz/pro/utils/MD5Utils.class
 com/zzz/pro/service/UserService.class
+com/zzz/pro/enums/MsgTypeEnum.class
 com/zzz/pro/pojo/dto/ChatMsg.class
 com/zzz/pro/pojo/vo/ChatWindowsVO.class
 com/zzz/pro/dao/UserRepository.class

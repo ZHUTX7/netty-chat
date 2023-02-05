@@ -10,6 +10,7 @@ import com.zzz.pro.pojo.vo.FriendsVO;
 import com.zzz.pro.pojo.vo.UserProfileVO;
 
 import java.util.List;
+import java.util.Map;
 
 public interface SocialService {
 
@@ -18,6 +19,9 @@ public interface SocialService {
 
     //停止匹配（1.手动停止 2.退出APP ）
     void stopMatch(String userId);
+
+    //查询匹配状态
+    Map<String,String> queryMatchStatus(String userId);
 
     //TODO 推送匹配人选 list
     List<UserProfileVO> pushMatchUserList(UserFilterForm userFilterForm,String UserId);
