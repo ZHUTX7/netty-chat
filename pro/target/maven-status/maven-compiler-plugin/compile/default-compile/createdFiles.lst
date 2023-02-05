@@ -2,17 +2,15 @@ com/zzz/pro/netty/enity/DataContent.class
 com/zzz/pro/utils/MD5Utils.class
 com/zzz/pro/service/UserService.class
 com/zzz/pro/pojo/dto/ChatMsg.class
+com/zzz/pro/pojo/vo/ChatWindowsVO.class
 com/zzz/pro/dao/UserRepository.class
 com/zzz/pro/dao/ChatMsgRepository.class
 com/zzz/pro/utils/JWTUtils.class
 com/zzz/pro/service/UserServiceImpl.class
-com/zzz/pro/service/FriendsService.class
 com/zzz/pro/controller/ChatMsgController.class
-com/zzz/pro/service/FriendsServiceImpl.class
 com/zzz/pro/enums/MsgActionEnum.class
 com/zzz/pro/utils/IDWorker.class
 com/zzz/pro/utils/MyMapper.class
-com/zzz/pro/controller/FriendsController.class
 com/zzz/pro/netty/WSServer.class
 com/zzz/pro/pojo/vo/UserVO.class
 com/zzz/pro/config/KafkaConfig.class
@@ -26,7 +24,7 @@ com/zzz/pro/pojo/InterfaceDto/LoginDTO.class
 com/zzz/pro/pojo/vo/RegisterVO.class
 com/zzz/pro/ProApplication.class
 com/zzz/pro/utils/Img2Base64.class
-com/zzz/pro/dao/ChatMsgRepositoryImpl.class
+com/zzz/pro/enums/FriendsStatusEnum.class
 com/zzz/pro/utils/SnowFlake.class
 com/zzz/pro/mapper/UserMatchMapper.class
 com/zzz/pro/netty/WSServer$SingletonWSServer.class

@@ -301,20 +301,22 @@ public class SocialServiceImpl implements SocialService{
       return list.stream().map(e->{
         FriendsVO vo = new FriendsVO();
         vo.setUserId((String)e.get("user_id"));
-        vo.setUserImage((String)e.get("user_nickname"));
-        vo.setUserNickName((String)e.get("user_face_image"));
+        vo.setUserImage((String)e.get("user_face_image"));
+        vo.setUserNickName((String)e.get("user_nickname"));
         return vo;}).collect(Collectors.toList());
 
     }
 
     @Override
     public void removeFriendsRel(String userId, String targetId) {
-
+        userFriendsRepo.updateFriendsStatus(userId,targetId);
     }
 
     @Override
     public void delFriendsData(String userId, String targetId) {
-
+        userFriendsRepo.delFriends( userId,targetId);
     }
+
+
 
 }

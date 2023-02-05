@@ -12,4 +12,5 @@ public interface ChatMsgMapper extends MyMapper<ChatMsg> {
     void batchUpdateMsgSigned(List<String> msgIds);
 
     List<ChatMsg> getUnSignMsg(String userId);
+
 }

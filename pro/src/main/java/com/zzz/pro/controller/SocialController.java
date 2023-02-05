@@ -93,7 +93,6 @@ public class SocialController {
     @GetMapping("/dating/query")
     public SysJSONResult queryDatingStatus(@RequestHeader("token") String token,@Param("targetId") String targetId){
         String userId =  JWTUtils.getClaim(token,"userId");
-      ;
         return  ResultVOUtil.success(socialService.queryDatingStatus(userId,targetId));
     }
     //提出约会/同意约会
@@ -104,19 +103,28 @@ public class SocialController {
         return  ResultVOUtil.success();
     }
 
-    //    查询好友
+    //    查询好友列表
     @GetMapping("/queryFriends")
     public SysJSONResult queryFriends(@RequestHeader("token") String token){
         String userId =  JWTUtils.getClaim(token,"userId");
         return  ResultVOUtil.success(socialService.queryFriendsList(userId));
     }
 
-    //删除好友
-    @PostMapping("/removeFriends")
-    public SysJSONResult removeFriends(@RequestHeader("token") String token){
+    //移除好友
+    @GetMapping("/removeFriends")
+    public SysJSONResult removeFriends(@RequestHeader("token") String token,@Param("targetId") String targetId){
         String userId =  JWTUtils.getClaim(token,"userId");
-        return  ResultVOUtil.success(socialService.queryFriendsList(userId));
+        socialService.removeFriendsRel(userId,targetId);
+        return  ResultVOUtil.success();
     }
 
+
+    //打开聊天框
+    @GetMapping("/clickChatWindow")
+    public SysJSONResult clickChatWindow(@RequestHeader("token") String token,@Param("targetId") String targetId){
+        String userId =  JWTUtils.getClaim(token,"userId");
+        socialService.removeFriendsRel(userId,targetId);
+        return  ResultVOUtil.success();
+    }
 
 }
