@@ -10,5 +10,5 @@ import java.util.List;
 import java.util.Map;
 
 public interface UserPersonalInfoMapper extends MyMapper<UserPersonalInfo> {
-   public   List<Map> queryUserOutlineInfo(List<String> userIdList);
+      List<Map> queryUserOutlineInfo(List<String> userIdList);
 }

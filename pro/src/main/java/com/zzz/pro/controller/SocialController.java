@@ -130,8 +130,7 @@ public class SocialController {
     @GetMapping("/clickChatWindow")
     public SysJSONResult clickChatWindow(@RequestHeader("token") String token,@Param("targetId") String targetId){
         String userId =  JWTUtils.getClaim(token,"userId");
-        socialService.removeFriendsRel(userId,targetId);
-        return  ResultVOUtil.success();
+        return  ResultVOUtil.success(socialService.getFriendsVO(userId,targetId));
     }
 
 }

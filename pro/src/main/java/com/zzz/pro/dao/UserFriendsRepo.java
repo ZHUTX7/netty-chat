@@ -25,6 +25,11 @@ public class UserFriendsRepo {
         userFriendsMapper.updateFriendsStatus(userId,friendsId,status+1);
     }
 
+    public Integer queryFriendsStatus(String userId,String friendsId) {
+        Integer status = userFriendsMapper.queryFriendsRelStatus(userId, friendsId);
+        return status;
+    }
+
     public void delFriends(String userId,String friendsId){
         UserFriends u = new UserFriends();
         u.setFriendsId(friendsId);

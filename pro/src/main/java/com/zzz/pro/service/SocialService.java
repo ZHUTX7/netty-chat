@@ -60,4 +60,6 @@ public interface SocialService {
     //删除好友数据
     void delFriendsData(String userId ,String targetId);
 
+    FriendsVO getFriendsVO(String userId,String targetId);
+
 }

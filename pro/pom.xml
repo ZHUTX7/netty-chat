@@ -113,6 +113,13 @@
 
         </dependency>
 
+        <!--APNS -->
+        <dependency>
+            <groupId>com.eatthepath</groupId>
+            <artifactId>pushy</artifactId>
+            <version>0.14.1</version>
+        </dependency>
+
         <!-- Kafka  Message 序列化 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

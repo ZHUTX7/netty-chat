@@ -105,7 +105,7 @@ public class SocialServiceImpl implements SocialService{
             //根据筛选条件计算
             for(Map.Entry<String,UserProfileVO> entry : userMap.entrySet()){
                 //TODO 筛选测试阶段关闭
-                if(userId == entry.getValue().getUserId()){
+                if(userId .equals(entry.getValue().getUserId()) ){
                     continue;
                 }
 //                boolean isDislikeUser = redisTemplate.opsForHash().hasKey(RedisKeyEnum.DISLIKE_USER_POOL.getCode()+"userId",userId);
@@ -123,8 +123,10 @@ public class SocialServiceImpl implements SocialService{
 
                u.stream().forEach(e->{
                    UserProfileVO vo = new UserProfileVO();
-                   BeanUtils.copyProperties(e,vo);
-                   list.add(vo);
+                   if(!userId .equals(e.getUserId()) ){
+                       BeanUtils.copyProperties(e,vo);
+                       list.add(vo);
+                   }
                });
             }
             return list;
@@ -135,6 +137,9 @@ public class SocialServiceImpl implements SocialService{
             //根据筛选条件计算
             for(Map.Entry<String,UserProfileVO> entry : userMap.entrySet()){
                 //TODO 筛选测试阶段关闭
+                if(userId == entry.getValue().getUserId()){
+                    continue;
+                }
 //                String userId = entry.getValue().getUserId();
 //                boolean isDislikeUser = redisTemplate.opsForHash().hasKey(RedisKeyEnum.DISLIKE_USER_POOL.getCode()+"userId",userId);
 //                if(isDislikeUser){
@@ -156,8 +161,14 @@ public class SocialServiceImpl implements SocialService{
             u.setUserSex(findUserSex);
 
             List<UserPersonalInfo> allUser =  userRepository.getAllByExample(u);
-
-            BeanUtils.copyProperties(allUser,list);
+            for(UserPersonalInfo e:allUser){
+                if(e.getUserId().equals(userId)){
+                    continue;
+                }
+                UserProfileVO vo = new UserProfileVO();
+                BeanUtils.copyProperties(e,vo);
+                list.add(vo);
+            }
 
         }
         return list;
@@ -333,6 +344,17 @@ public class SocialServiceImpl implements SocialService{
         userFriendsRepo.delFriends( userId,targetId);
     }
 
+    @Override
+    public FriendsVO getFriendsVO(String userId, String targetId) {
+        FriendsVO vo = new FriendsVO();
+        UserPersonalInfo up =  userRepository.queryUserPerInfo(targetId);
+        vo.setUserId(targetId);
+        vo.setUserNickName(up.getUserNickname());
+        vo.setUserImage(up.getUserFaceImage());
+        Integer friendsStatus =  userFriendsRepo.queryFriendsStatus(userId,targetId);
+        vo.setFriendsStatus(friendsStatus);
+        return vo;
+    }
 
 
 }
