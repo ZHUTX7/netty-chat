@@ -11,8 +11,10 @@ import com.zzz.pro.pojo.result.SysJSONResult;
 import com.zzz.pro.pojo.vo.DatingStatusVO;
 import com.zzz.pro.pojo.vo.FriendsVO;
 import com.zzz.pro.pojo.vo.UserProfileVO;
+import com.zzz.pro.utils.CRCUtil;
 import com.zzz.pro.utils.ResultVOUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -185,6 +187,8 @@ public class SocialServiceImpl implements SocialService{
             userMatch.setMyUserId(b);
             userMatch.setMatchUserId(a);
             userRepository.delMatchUsers(userMatch);
+            //TODO 删除dating数据 添加到不喜欢列表
+//            userDatingRepository.delDatingData();
 
         }catch (Exception e){
             throw new ApiException(500,"解除失败～");
@@ -212,90 +216,129 @@ public class SocialServiceImpl implements SocialService{
 
     @Override
     public SysJSONResult boostMatch(String userId, String targetId) {
-        //1.判断是否为单向选择
-        String me = (String)redisTemplate.opsForValue().get(RedisKeyEnum.MATCH_SELECTED_POOL.getCode()+targetId);
+        //1.判断是否为单向选择(我是否被他喜欢
+        String crc = CRCUtil.crc32Hex(targetId+userId);
+        String me = (String)redisTemplate.opsForValue().get(RedisKeyEnum.MATCH_SELECTED_POOL.getCode()+crc);
         if(StringUtils.isEmpty(me)){
-            redisTemplate.opsForValue().set(RedisKeyEnum.MATCH_SELECTED_POOL.getCode()+userId,targetId);
-
+            //说明对方没有选过我
+            crc = CRCUtil.crc32Hex(userId+targetId);
+            redisTemplate.opsForValue().set(RedisKeyEnum.MATCH_SELECTED_POOL.getCode()+crc,"1");
             return ResultVOUtil.error(201,null);
         }
         else {
+            //TODO
             UserMatch userMatch = new UserMatch();
             userMatch.setMyUserId(userId);
             userMatch.setMatchUserId(targetId);
+            userMatch.setActiveState(1);
+            UserMatch userMatch2 = new UserMatch();
+            userMatch2.setMyUserId(targetId);
+            userMatch2.setMatchUserId(userId);
+            userMatch2.setActiveState(1);
+
             userRepository.addMatchUsers(userMatch);
+            userRepository.addMatchUsers(userMatch2);
+            redisTemplate.delete(RedisKeyEnum.MATCH_SELECTED_POOL.getCode()+crc);
+//            String datingId;
+//            if(userId.hashCode()>targetId.hashCode()){
+//                datingId = CRCUtil.crc32Hex(userId+targetId);
+//            }else {
+//                datingId = CRCUtil.crc32Hex(targetId+userId);
+//            }
+            UserDating dating = new UserDating();
+            dating.setUserId(userId);
+            dating.setUserTargetId(targetId);
+            dating.setStatus(0);
+            UserDating dating2 = new UserDating();
+            dating2.setUserId(targetId);
+            dating2.setUserTargetId(userId);
+            dating2.setStatus(0);
+            userDatingRepository.addDatingData(dating);
+            userDatingRepository.addDatingData(dating2);
             return ResultVOUtil.success("恭喜，匹配成功～",null);
         }
     }
 
     @Override
     public void unBoostMatch(String userId, String targetId) {
-        String me = (String)redisTemplate.opsForValue().get(RedisKeyEnum.MATCH_SELECTED_POOL.getCode()+targetId);
         redisTemplate.opsForHash().put(RedisKeyEnum.DISLIKE_USER_POOL.getCode()+"userId",targetId,1);
     }
 
 
 
     @Override
-    public void acceptDating(String userId, String targetId) {
-        String datingId = userId + targetId;
-        datingId ="dat"+  datingId.hashCode();
-        UserDating example = new UserDating();
-        example.setUserId(userId);
-        example.setUserTargetId(targetId);
-        example.setDatingId(datingId);
-        // 查询约会状态
-        UserDating dating = userDatingRepository.queryDating(example);
-        if(ObjectUtils.isEmpty(dating)){
-            example.setDatingId(datingId);
-            return;
-        }
-        String status = dating.getStatus();
+    public void acceptDating(String userId, String targetId,Integer stautus) {
 
-        // 1. 对方已经同意
-        if(status.equals(userId)){
-            dating.setStatus("both");
-            userDatingRepository.updateDating(dating);
-        }
-        // 2. 仅自己同意 - return
-        // 3. 双方全部同意
-        else {
+        UserDating example = new UserDating();
+        example.setUserId(targetId);
+        example.setUserTargetId(userId);
+        // 查询约会状态
+        Integer targetStatus  = userDatingRepository.queryDatingStatus(targetId+userId);
+        if(ObjectUtils.isEmpty(targetStatus)){
             return;
         }
+
+        //我到了约会地点
+        if(stautus==5){
+            //对方也到目标地点
+            if(targetStatus==5){
+                completeDating(userId,targetId);
+                return;
+            }
+            userDatingRepository.updateBothDatingStatus(userId,targetId,5,6);
+            return;
+        }
+        // 1. 对方已经同意见面
+        if(targetStatus.equals(1)){
+            //更新自己dating状态
+            userDatingRepository.updateBothDatingStatus(userId,targetId,3,3);
+        }else{
+            //对方没同意
+            //对方的约会状态改为2 自己的改为1
+            userDatingRepository.updateBothDatingStatus(userId,targetId,1,2);
+        }
+
     }
 
     @Override
     public void completeDating(String userId, String targetId) {
-        String datingId = userId + targetId;
-        datingId ="dat"+  datingId.hashCode();
+        userDatingRepository.updateBothDatingStatus(userId,targetId,4,4);
+
         //删除约会数据
-        userDatingRepository.delDatingData(datingId);
+//        userDatingRepository.delDatingData(datingId);
         //添加到好友列表
         makeFriendsRel(userId,targetId);
     }
 
     @Override
     public DatingStatusVO queryDatingStatus(String userId, String targetId) {
-        String datingId = userId + targetId;
-        datingId ="dat"+  datingId.hashCode();
-        UserDating example = new UserDating();
-        example.setUserId(userId);
-        example.setUserTargetId(targetId);
-        example.setDatingId(datingId);
         // 查询约会状态
-        UserDating dating = userDatingRepository.queryDating(example);
-        if(ObjectUtils.isEmpty(dating)){
-            throw new ApiException(401,"数据错误，两人之间并无匹配");
-        }
+        Integer status =  userDatingRepository.queryDatingStatus(userId+targetId);
         DatingStatusVO vo = new DatingStatusVO();
 
-        if(dating.getStatus().equals(targetId)){
+        if(status==2){
             vo.setStatus(2);
             vo.setMsg("对方提出约会邀请～");
-        }else if(dating.getStatus().equals(userId)){
+        }else if(status==1){
             vo.setStatus(1);
             vo.setMsg("等待对方接受邀请～");
-        }else {
+        }else if(status==4){
+            vo.setStatus(4);
+            vo.setMsg("约会完成～");
+        }else if(status==3){
+            vo.setStatus(3);
+            vo.setMsg("双方都同意约会～");
+        }else  if(status==5){
+            vo.setStatus(5);
+            vo.setMsg("请等待对方到达～");
+        }else  if(status==6){
+            vo.setStatus(6);
+            vo.setMsg("搞快点～");
+        }else  if(status==7){
+            vo.setStatus(6);
+            vo.setMsg("双方到达指定位置");
+        }
+        else {
             vo.setStatus(0);
             vo.setMsg("快发起约会邀请～");
         }
@@ -306,10 +349,16 @@ public class SocialServiceImpl implements SocialService{
     @Override
     public void makeFriendsRel(String userId, String targetId) {
         UserFriends userFriends = new UserFriends();
+        userFriends.setId( CRCUtil.crc32Hex(targetId+userId));
         userFriends.setUserId(userId);
         userFriends.setFriendsId(targetId);
-        userFriends.setFriendsStatus(2);
+        userFriends.setFriendsStatus(1);
         userFriends.setCreatTime(new Timestamp(new Date().getTime()));
+        userFriendsRepo.addFriends(userFriends);
+
+        userFriends.setId( CRCUtil.crc32Hex(userId+targetId));
+        userFriends.setUserId(targetId);
+        userFriends.setFriendsId(userId);
         userFriendsRepo.addFriends(userFriends);
     }
 

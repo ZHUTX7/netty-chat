@@ -7,4 +7,5 @@ public class FriendsVO {
     private String userId;
     private String userNickName;
     private String userImage;
+    private Integer friendsStatus;
 }

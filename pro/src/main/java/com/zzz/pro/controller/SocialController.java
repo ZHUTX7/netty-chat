@@ -84,7 +84,7 @@ public class SocialController {
     @GetMapping("/unBoost")
     public SysJSONResult unBoost(@RequestHeader("token") String token,@Param("targetId") String targetId){
         String userId =  JWTUtils.getClaim(token,"userId");
-        socialService.boostMatch(userId,targetId);
+        socialService.unBoostMatch(userId,targetId);
         return  ResultVOUtil.success();
     }
 
@@ -102,11 +102,17 @@ public class SocialController {
         String userId =  JWTUtils.getClaim(token,"userId");
         return  ResultVOUtil.success(socialService.queryDatingStatus(userId,targetId));
     }
-    //提出约会/同意约会
+    //提出约会/同意约会/修改约会状态
     @GetMapping("/dating/accept")
-    public SysJSONResult acceptDating(@RequestHeader("token") String token,@Param("targetId") String targetId){
+    public SysJSONResult acceptDating(@RequestHeader("token") String token,@Param("targetId") String targetId,
+                                      @Param("action") Integer action){
+        //action = 1 提出约会
+        //action = 5 自己到达约会地点
+        if(action!=1 && action!=5){
+            return  ResultVOUtil.success("别玩骚的",null);
+        }
         String userId =  JWTUtils.getClaim(token,"userId");
-        socialService.acceptDating(userId,targetId);
+        socialService.acceptDating(userId,targetId,action);
         return  ResultVOUtil.success();
     }
 

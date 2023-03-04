@@ -9,4 +9,5 @@ import org.springframework.stereotype.Component;
 public class LoginDTO {
     private String loginMethod;
     private UserBaseInfo loginParams;
+    private String deviceId;
  }

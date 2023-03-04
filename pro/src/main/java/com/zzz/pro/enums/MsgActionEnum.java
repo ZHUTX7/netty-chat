@@ -12,8 +12,8 @@ public enum MsgActionEnum {
     SIGNED(3, "消息签收"),
     KEEPALIVE(4, "客户端保持心跳"),
     PULL_FRIEND(5, "拉取通信好友"),
-
-    PULL_USER_LIST(6,"拉取用户信息");
+    PULL_USER_LIST(6,"拉取用户信息"),
+    GPS(7,"位置数据");
 
     public final Integer type;
     public final String content;

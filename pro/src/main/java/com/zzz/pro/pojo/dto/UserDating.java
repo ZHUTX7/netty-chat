@@ -11,12 +11,12 @@ import javax.persistence.Table;
 public class UserDating {
     @Id
     @Column(name = "dating_id")
-    public String datingId;
-    // 1-仅自己同意 2-仅对方同意  3-约会完成
+    private String datingId;
+    //0-都未同意 1-仅自己同意 2-仅对方同意  3-全部同意 4-约会完成
     @Column(name = "status")
-    public String status;
+    private Integer status;
     @Column(name = "user_id")
-    public String userId;
+    private String userId;
     @Column(name = "user_targetid")
-    public String userTargetId;
+    private String userTargetId;
 }

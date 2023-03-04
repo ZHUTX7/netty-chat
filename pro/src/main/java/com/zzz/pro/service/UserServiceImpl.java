@@ -3,9 +3,12 @@ package com.zzz.pro.service;
 import com.zzz.pro.dao.ChatMsgRepository;
 import com.zzz.pro.dao.UserRepository;
 import com.zzz.pro.dao.UserTagRepository;
+import com.zzz.pro.enums.RedisKeyEnum;
 import com.zzz.pro.exception.ApiException;
 import com.zzz.pro.pojo.dto.*;
+import com.zzz.pro.pojo.form.UserGpsForm;
 import com.zzz.pro.pojo.result.SysJSONResult;
+import com.zzz.pro.pojo.vo.UserGpsVO;
 import com.zzz.pro.pojo.vo.UserTagVO;
 import com.zzz.pro.utils.IDWorker;
 import com.zzz.pro.utils.JWTUtils;
@@ -13,9 +16,11 @@ import com.zzz.pro.utils.ResultVOUtil;
 import io.netty.util.internal.StringUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 
 import javax.annotation.Resource;
@@ -32,14 +37,15 @@ public class UserServiceImpl implements UserService{
     private UserRepository userRepository;
     @Resource
     private UserTagRepository userTagRepository;
-
+    @Resource
+    private RedisTemplate redisTemplate;
     @Resource
     private ChatMsgRepository chatMsgRepository;
 
     private IDWorker idWorker = new IDWorker(1,1,1);
 
     @Override
-    public SysJSONResult userLogin(UserBaseInfo userBaseInfo) {
+    public SysJSONResult userLogin(UserBaseInfo userBaseInfo,String deviceId) {
         // 1. 验证用户名是否存在
         if(!userRepository.queryPhoneIsExist(userBaseInfo.getUserPhone())){
             return ResultVOUtil.error(500,"用户名不存在");
@@ -57,6 +63,7 @@ public class UserServiceImpl implements UserService{
         Map<String ,String > info =  new HashMap<>();
         info.put("nickname",u.getUserNickname());
         info.put("userId",u.getUserId());
+        info.put("deviceId",deviceId);
 //        info.put("userFaceImage",u.getUserFaceImage());
         String token = JWTUtils.creatToken(info);
         Map<String,Object> map = new HashMap<>();
@@ -179,6 +186,11 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    public void changeUserGps(String userId,String gps) {
+        redisTemplate.opsForValue().set(RedisKeyEnum.USER_POSITION.getCode()+userId,gps);
+    }
+
+    @Override
     public void updateUserTag(UserTag userTag) {
         userTagRepository.updateUserTag(userTag);
     }
@@ -215,5 +227,27 @@ public class UserServiceImpl implements UserService{
             throw new ApiException(401,"数据错误");
         }
 
+    }
+
+    @Override
+    public void uploadUserPos(UserGpsForm userGpsForm) {
+        String gps = userGpsForm.getUserGps();
+        String distance = userGpsForm.getDistance();
+        if(!StringUtils.isEmpty(distance)){
+            redisTemplate.opsForValue().set(RedisKeyEnum.USER_DISTANCE.getCode()+userGpsForm.getUserId(),distance);
+        }
+        redisTemplate.opsForValue().set(RedisKeyEnum.USER_POSITION.getCode()+userGpsForm.getUserId(),gps);
+    }
+
+    //目前只查询距离
+    @Override
+    public UserGpsVO queryUserPos(String  userId) {
+
+        String distance=  (String)redisTemplate.opsForValue().get(RedisKeyEnum.USER_DISTANCE.getCode()+userId);
+
+        UserGpsVO vo = new UserGpsVO();
+        vo.setUserId(userId);
+        vo.setDistance(distance);
+        return vo;
     }
 }

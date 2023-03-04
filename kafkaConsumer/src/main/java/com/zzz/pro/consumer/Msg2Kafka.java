@@ -3,6 +3,9 @@ package com.zzz.pro.consumer;
 
 import com.zzz.pro.mapper.ChatMsgMapper;
 import com.zzz.pro.pojo.dto.ChatMsg;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.protocol.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -32,7 +35,16 @@ public class Msg2Kafka {
         System.out.println(chatMsg.getMessageType());
         chatMsgMapper.insertMsg(chatMsg);
         //手动提交, Acknowledgment ack
-        //TODO 加上ACK就类型转换报错
        // logger.info("Kafka to Mysql 执行状态{},消息内容{}", chatMsg.getMessage());
     }
+
+    //批量插入
+//    @KafkaListener(topics = "3ZStudios",
+//            groupId = "consumer-group-" + "3ZStudios")
+//    public void onMessageBatch(List<Message<String>> list, Consumer consumer) {
+//        System.out.println(chatMsg.getMessageType());
+//        chatMsgMapper.insertMsg(chatMsg);
+//        //手动提交, Acknowledgment ack
+//       // logger.info("Kafka to Mysql 执行状态{},消息内容{}", chatMsg.getMessage());
+//    }
 }

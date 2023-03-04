@@ -16,4 +16,6 @@ public interface UserFriendsMapper extends MyMapper<UserFriends> {
 
     @Select("select friends_status from user_friends where user_id = #{userId} and friends_id= #{friendsId}  ; ")
     Integer queryFriendsRelStatus(String userId,String friendsId);
+
+
 }

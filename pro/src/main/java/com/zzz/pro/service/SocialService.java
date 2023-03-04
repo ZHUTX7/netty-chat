@@ -43,7 +43,7 @@ public interface SocialService {
     void delBlackUserList(String userId);
 
     //同意约会
-    void acceptDating(String userId ,String targetId);
+    void acceptDating(String userId ,String targetId,Integer status);
 
     //完成约会
     void completeDating(String userId ,String targetId);

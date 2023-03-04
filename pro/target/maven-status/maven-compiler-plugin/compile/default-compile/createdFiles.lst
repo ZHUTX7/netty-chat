@@ -8,6 +8,7 @@ com/zzz/pro/dao/UserRepository.class
 com/zzz/pro/dao/ChatMsgRepository.class
 com/zzz/pro/utils/JWTUtils.class
 com/zzz/pro/service/UserServiceImpl.class
+com/zzz/pro/utils/CRCUtil.class
 com/zzz/pro/controller/ChatMsgController.class
 com/zzz/pro/enums/MsgActionEnum.class
 com/zzz/pro/utils/IDWorker.class
@@ -20,6 +21,7 @@ com/zzz/pro/task/Msg2Kafka.class
 com/zzz/pro/service/ChatMsgService.class
 com/zzz/pro/controller/UserController.class
 com/zzz/pro/netty/WSServerInitializer.class
+com/zzz/pro/config/ApnsConfig.class
 com/zzz/pro/netty/UserChannelMap$SingletonMap.class
 com/zzz/pro/pojo/InterfaceDto/LoginDTO.class
 com/zzz/pro/pojo/vo/RegisterVO.class

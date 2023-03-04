@@ -1,12 +1,14 @@
 package com.zzz.pro.controller;
 
 
+import com.zzz.pro.config.ApnsConfig;
 import com.zzz.pro.pojo.InterfaceDto.LoginDTO;
 import com.zzz.pro.pojo.bo.UserBO;
 import com.zzz.pro.pojo.dto.UserBaseInfo;
 import com.zzz.pro.pojo.dto.UserMatch;
 import com.zzz.pro.pojo.dto.UserPersonalInfo;
 import com.zzz.pro.pojo.dto.UserTag;
+import com.zzz.pro.pojo.form.UserGpsForm;
 import com.zzz.pro.pojo.result.SysJSONResult;
 import com.zzz.pro.pojo.vo.RegisterVO;
 import com.zzz.pro.service.UserService;
@@ -36,18 +38,24 @@ public class UserController {
     @Resource
     private UserService userService;
 
-
-
+    @Resource
+    private ApnsConfig apnsConfig;
+    @GetMapping("/test")
+    public void test(){
+        String deviceId = "48966b81137c9c077eda218216b11782e124e18dbc622ce1493bd2c2eeb300d7";
+        String json = "{\"msg\":\"hello\"}";
+        apnsConfig.sendIosMsg(deviceId,json,10000);
+    }
 //    @ApiLimit(seconds = 10,maxCount = 3)
     @PostMapping("/login")
     public SysJSONResult login(@RequestBody LoginDTO loginDTO,@RequestHeader("token") String token){
 
         System.out.println("执行了");
-        userService.userLogin(loginDTO.getLoginParams());
+        userService.userLogin(loginDTO.getLoginParams(),loginDTO.getDeviceId());
         //1.username可为邮箱，手机号，用户名，后端需验证username的类型
          String type =   loginDTO.getLoginMethod();
          switch (type){
-             case "NORMAL":return userService.userLogin(loginDTO.getLoginParams());
+             case "NORMAL":return userService.userLogin(loginDTO.getLoginParams(),loginDTO.getDeviceId());
              case "VERIFY":return userService.userLoginByToken(token);
             // case "TOKEN":loginDTO.getLoginParams().get;;break;
              default:return ResultVOUtil.error(401,"登录类型不存在");
@@ -56,21 +64,21 @@ public class UserController {
     }
 
 
-    //TODO  tag 
-    @PostMapping("/profile")
-    public SysJSONResult profile(@RequestBody LoginDTO loginDTO,@RequestHeader("token") String token){
-
-
-        //1.username可为邮箱，手机号，用户名，后端需验证username的类型
-        String type =   loginDTO.getLoginMethod();
-        switch (type){
-            case "NORMAL":return userService.userLogin(loginDTO.getLoginParams());
-            case "VERIFY":return userService.userLoginByToken(token);
-            // case "TOKEN":loginDTO.getLoginParams().get;;break;
-            default:return ResultVOUtil.error(401,"登录类型不存在");
-        }
-
-    }
+//    //TODO  tag
+//    @PostMapping("/profile")
+//    public SysJSONResult profile(@RequestBody LoginDTO loginDTO,@RequestHeader("token") String token){
+//
+//
+//        //1.username可为邮箱，手机号，用户名，后端需验证username的类型
+//        String type =   loginDTO.getLoginMethod();
+//        switch (type){
+//            case "NORMAL":return userService.userLogin(loginDTO.getLoginParams());
+//            case "VERIFY":return userService.userLoginByToken(token);
+//            // case "TOKEN":loginDTO.getLoginParams().get;;break;
+//            default:return ResultVOUtil.error(401,"登录类型不存在");
+//        }
+//
+//    }
     //验证注册码
     @PostMapping("/register/verifyPhone")
     public SysJSONResult verifyCode(@RequestBody RegisterVO registerVO){
@@ -175,6 +183,18 @@ public class UserController {
     public SysJSONResult clearUserTag(@RequestBody UserTag userTag){
         userService.clearUserTag(userTag);
         return  ResultVOUtil.success();
+    }
+
+    //上传用户位置
+    @PostMapping("/uploadUserPos")
+    public SysJSONResult uploadUserPos(@RequestBody UserGpsForm userGpsForm){
+        userService.uploadUserPos(userGpsForm);
+        return  ResultVOUtil.success();
+    }
+    // 查询用户距离目标地点位置
+    @GetMapping("/queryUserDistance")
+    public SysJSONResult uploadUserPos(@Param("targetId") String targetId){
+        return  ResultVOUtil.success(userService.queryUserPos(targetId));
     }
 
 

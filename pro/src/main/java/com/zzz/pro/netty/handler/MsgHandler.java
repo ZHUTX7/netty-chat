@@ -2,10 +2,7 @@ package com.zzz.pro.netty.handler;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.zzz.pro.enums.MsgActionEnum;
 import com.zzz.pro.enums.MsgSignFlagEnum;
@@ -19,6 +16,7 @@ import com.zzz.pro.pojo.form.UserFilterForm;
 import com.zzz.pro.pojo.vo.UserProfileVO;
 import com.zzz.pro.service.ChatMsgService;
 import com.zzz.pro.service.SocialService;
+import com.zzz.pro.service.UserService;
 import com.zzz.pro.task.Msg2Kafka;
 import com.zzz.pro.utils.*;
 import io.netty.channel.Channel;
@@ -30,6 +28,7 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.CollectionUtils;
 
 /**
@@ -50,7 +49,7 @@ public class MsgHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> 
             throws Exception {
         InetSocketAddress sa = (InetSocketAddress)ctx.channel().remoteAddress();
 
-        logger.warn("获取到客户端{}请求连接:",sa.getAddress().getHostAddress());
+       // logger.warn("获取到客户端{}请求连接:",sa.getAddress().getHostAddress());
         String content = msg.text();
         Channel currentChannel = ctx.channel();
 
@@ -77,10 +76,11 @@ public class MsgHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> 
         // 2.1 websocket 第一次连接，用户上线
         if (action == MsgActionEnum.CONNECT.type) {
             //当websocket 第一次open的时候，初始化channel，把用的channel和userid关联起来
-
-
+            String deviceId =  dataContent.getExpand();
+            RedisTemplate redisTemplate =   (RedisTemplate) SpringUtil.getBean("redisTemplate");
+            redisTemplate.opsForValue().set("dv"+sendUserId,deviceId);
             UserChannelMap.getInstance().put(sendUserId, currentChannel);
-            //测试
+            //测试x
             logger.info("当前在线用户列表为：");
             String userList = UserChannelMap.output();
             logger.info( "<<<测试打印信息>>>[用户]"+sendUserId +"登陆成功，  时间：" +LocalDateTime.now());
@@ -90,6 +90,7 @@ public class MsgHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> 
         }
         else if (action == MsgActionEnum.CHAT.type) {
             //  2.2  聊天类型的消息，把聊天记录保存到数据库，同时标记消息的签收状态[未签收]
+            dataContent.getChatMsg().setSendTime(new Date());
             if(UserChannelMap.getInstance().get(sendUserId) == null
                     || !UserChannelMap.getInstance().get(sendUserId).equals(currentChannel)){
                 currentChannel.writeAndFlush(
@@ -165,9 +166,14 @@ public class MsgHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> 
 
         else if (action == MsgActionEnum.KEEPALIVE.type) {
             //  2.4  心跳类型的消息
-            System.out.println("收到来自channel为[" + currentChannel + "]的心跳包...");
+            //System.out.println("收到来自channel为[" + currentChannel + "]的心跳包...");
         }
-
+        else if(action == MsgActionEnum.GPS.type){
+           String userId =  JWTUtils.getClaim(dataContent.getToken(),"userId");
+           String gps = dataContent.getExpand();
+           UserService userService =   (UserService) SpringUtil.getBean("userService");
+           userService.changeUserGps(userId,gps);
+        }
     }
 
 

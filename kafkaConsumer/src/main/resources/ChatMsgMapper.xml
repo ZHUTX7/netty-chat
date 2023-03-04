@@ -13,4 +13,12 @@
     <result column="send_time" property="sendTime" jdbcType="TIMESTAMP" />
     <result column="message_type" property="messageType" jdbcType="INTEGER" />
   </resultMap>
+
+  <insert id="addMsgList" parameterType="com.zzz.pro.pojo.dto.ChatMsg"  >
+    insert into chat_msg (msg_id, send_user_id, accept_user_id, message, sign_flag, send_time, message_type)
+    values
+    <foreach collection="list" item="item" index="index" separator="," >
+      (#{item.msgId}, #{item.sendUserId}, #{item.acceptUserId}, #{item.message}, #{item.signFlag}, #{item.sendTime}, #{item.messageType})
+    </foreach>
+  </insert>
 </mapper>
