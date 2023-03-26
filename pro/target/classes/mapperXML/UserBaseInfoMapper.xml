@@ -13,6 +13,7 @@
     <result column="user_role" property="userRole" jdbcType="INTEGER" />
     <result column="last_login_time" property="lastLoginTime" jdbcType="TIMESTAMP" />
     <result column="user_coordination" property="coordination" jdbcType="VARCHAR" />
+    <result column="device_id" property="deviceId" jdbcType="VARCHAR" />
 
   </resultMap>
 </mapper>

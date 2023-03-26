@@ -1,17 +1,27 @@
 package com.zzz.pro.service;
 
+import com.qcloud.cos.COSClient;
+import com.qcloud.cos.model.PutObjectRequest;
+import com.qcloud.cos.model.PutObjectResult;
+import com.zzz.pro.config.CosConfig;
 import com.zzz.pro.dao.ChatMsgRepository;
 import com.zzz.pro.dao.UserRepository;
 import com.zzz.pro.dao.UserTagRepository;
 import com.zzz.pro.enums.RedisKeyEnum;
+import com.zzz.pro.enums.UserRoleEnum;
 import com.zzz.pro.exception.ApiException;
+import com.zzz.pro.mapper.UserMatchMapper;
+import com.zzz.pro.mapper.UserPhotoMapper;
 import com.zzz.pro.pojo.dto.*;
+import com.zzz.pro.pojo.form.LoginForm;
+import com.zzz.pro.pojo.form.UpdatePhotoIndexForm;
+import com.zzz.pro.pojo.form.UpdateProfileForm;
 import com.zzz.pro.pojo.form.UserGpsForm;
 import com.zzz.pro.pojo.result.SysJSONResult;
-import com.zzz.pro.pojo.vo.UserGpsVO;
-import com.zzz.pro.pojo.vo.UserTagVO;
+import com.zzz.pro.pojo.vo.*;
 import com.zzz.pro.utils.IDWorker;
 import com.zzz.pro.utils.JWTUtils;
+import com.zzz.pro.utils.RedisUtil;
 import com.zzz.pro.utils.ResultVOUtil;
 import io.netty.util.internal.StringUtil;
 import org.springframework.beans.BeanUtils;
@@ -20,19 +30,23 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService{
 
+    @Resource
+    private UserMatchMapper userMatchMapper;
     @Resource
     private UserRepository userRepository;
     @Resource
@@ -41,80 +55,69 @@ public class UserServiceImpl implements UserService{
     private RedisTemplate redisTemplate;
     @Resource
     private ChatMsgRepository chatMsgRepository;
+    @Resource
+    private COSClient cosClient;
+    @Resource
+    private RedisUtil redisUtil;
+    @Resource
+    private UserPhotoMapper userPhotoMapper;
 
     private IDWorker idWorker = new IDWorker(1,1,1);
 
     @Override
-    public SysJSONResult userLogin(UserBaseInfo userBaseInfo,String deviceId) {
+    public LoginResultVO userLogin(LoginForm loginForm) {
+        // 1. 验证验证码
+//        redisUtil.set(loginForm.getUserPhone(),loginForm.getVerifyCode(),60*5);
+        String code = (String)redisUtil.get(loginForm.getUserPhone());
+        if( StringUtils.isEmpty(code) || !code.equals(loginForm.getVerifyCode())){
+            throw new ApiException(401,"验证码错误");
+        }
+        LoginResultVO vo = new LoginResultVO();
+        UserBaseInfo userBaseInfo = userRepository.getUserByPhone(loginForm.getUserPhone());
         // 1. 验证用户名是否存在
-        if(!userRepository.queryPhoneIsExist(userBaseInfo.getUserPhone())){
-            return ResultVOUtil.error(500,"用户名不存在");
-        }
-        // 2. 验证密码
-        UserBaseInfo userBaseInfo1 =  userRepository.queryUserInfo(userBaseInfo.getUserPhone(),userBaseInfo.getUserPassword());
+        if(userBaseInfo==null){
+            //创建用户
+            userBaseInfo=  userRegister(loginForm.getUserPhone(),loginForm.getDeviceId());
+            vo.setIsNewUser(1);
 
-        if(userBaseInfo1 == null){
-            return ResultVOUtil.error(500,"密码错误");
+        }else {
+            vo.setIsNewUser(0);
+            vo.setLastLoginTime(userBaseInfo.getLastLoginTime());
         }
-        //3. 获取用户信息
-        UserPersonalInfo u = userRepository.queryUserPerInfo(userBaseInfo1.getUserId());
+        //2.封装VO
+        vo.setUserId(userBaseInfo.getUserId());
+        vo.setUserPhone(userBaseInfo.getUserPhone());
+        vo.setUserRole(userBaseInfo.getUserRole());
 
         // 4. 创建token
         Map<String ,String > info =  new HashMap<>();
-        info.put("nickname",u.getUserNickname());
-        info.put("userId",u.getUserId());
-        info.put("deviceId",deviceId);
-//        info.put("userFaceImage",u.getUserFaceImage());
+        info.put("userRole",userBaseInfo.getUserRole()+"");
+        info.put("userId",userBaseInfo.getUserId());
+        info.put("deviceId",userBaseInfo.getDeviceId());
         String token = JWTUtils.creatToken(info);
-        Map<String,Object> map = new HashMap<>();
-        map.put("userId",u.getUserId());
-        map.put("token",token);
+        vo.setToken(token);
 
-        //开发测试
-//        u.setUserFaceImageBig("测试数据，不显示");
-//        u.setUserFaceImage("测试数据，不显示");
-        map.put("profile",u);
-        userBaseInfo1.setUserLoginState(1);
-        userRepository.updateUserStatus(userBaseInfo1);
-        UserMatch userMatch =  userRepository.queryUserMatch(userBaseInfo1);
-        map.put("account",userBaseInfo1);
-        if(userMatch !=null ){
-            map.put("isMatch",1);
-            map.put("matchedUser",userRepository.queryUserPerInfo(userMatch.getMatchUserId()));
-
-        }else{
-            map.put("isMatch",0);
-        }
-
-        return ResultVOUtil.success(map);
+        //
+        redisUtil.set(RedisKeyEnum.USER_DEVICE_ID.getCode()
+                +userBaseInfo.getUserId(),userBaseInfo.getDeviceId());
+        // 5. 更新用户登录时间
+        return vo;
     }
 
     @Override
-    public SysJSONResult userRegister(UserBaseInfo userBaseInfo) {
-        if(userRepository.queryPhoneIsExist(userBaseInfo.getUserPhone())){
-            return ResultVOUtil.error(500,"手机号被占用");
-        }
+    public UserBaseInfo userRegister(String phone,String deviceId) {
+        UserBaseInfo userBaseInfo = new UserBaseInfo();
         userBaseInfo.setUserId(idWorker.nextId()+"");
+        userBaseInfo.setUserPhone(phone);
+        userBaseInfo.setDeviceId(deviceId);
+        userBaseInfo.setLastLoginTime(new Date());
+        userBaseInfo.setUserRole(UserRoleEnum.NORMAL_ROLE.getCode());
+        userBaseInfo.setUserPassword("");
         userRepository.addUserBaseInfo(userBaseInfo);
         UserPersonalInfo userPersonalInfo = new UserPersonalInfo();
         userPersonalInfo.setUserId(userBaseInfo.getUserId());
-
         userRepository.addUserPersonalInfo(userPersonalInfo);
-        Map<String,Object> map  = new HashMap<>();
-        map.put("account",userBaseInfo);
-        map.put("profile",userPersonalInfo);
-        map.put("isMatch",0);
-        return ResultVOUtil.success("用户注册成功",userBaseInfo);
-    }
-
-    @Override
-    public SysJSONResult userIsExist(UserBaseInfo userBaseInfo) {
-        if(userRepository.queryPhoneIsExist(userBaseInfo.getUserPhone())){
-            return ResultVOUtil.error(500,"手机号被占用");
-
-        }
-
-        return ResultVOUtil.success();
+        return userBaseInfo;
     }
 
     @Override
@@ -163,26 +166,17 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public SysJSONResult updateUserProfile(UserPersonalInfo userPersonalInfo) {
-      int result =  userRepository.updateUserProfile(userPersonalInfo);
-      return ResultVOUtil.success(null,"更新用户资料成功");
+    public SysJSONResult updateUserProfile(UpdateProfileForm form) {
+        UserPersonalInfo u = new UserPersonalInfo();
+        BeanUtils.copyProperties(form,u);
+        int result =  userRepository.updateUserProfile(u);
+        return ResultVOUtil.success(null,"更新用户资料成功");
     }
 
-
     @Override
-    @Transactional(propagation = Propagation.SUPPORTS)
-    public SysJSONResult getUnReadMessage(UserBaseInfo userBaseInfo) {
-        try{
-            ChatMsg chatMsg = new ChatMsg();
-            chatMsg.setAcceptUserId(userBaseInfo.getUserId());
-            chatMsg.setSignFlag(0);
-            List<ChatMsg> list = chatMsgRepository.getMsg(chatMsg);
-            return ResultVOUtil.success(list);
-
-        }catch (Exception e){
-            return ResultVOUtil.error(500,"查询失败～");
-        }
-
+    public UserPersonalInfo queryUserProfile(String userId) {
+        UserPersonalInfo u =  userRepository.queryUserPerInfo(userId);
+        return u;
     }
 
     @Override
@@ -249,5 +243,81 @@ public class UserServiceImpl implements UserService{
         vo.setUserId(userId);
         vo.setDistance(distance);
         return vo;
+    }
+
+    @Override
+    public String uploadUserPhoto(MultipartFile multipartFile, String userId,Integer photoIndex) {
+        //文件在存储桶中的key
+        String key = userId + photoIndex;
+        String fileName = multipartFile.getOriginalFilename();
+        List<String> FILE_WHILE_EXT_LIST = Arrays.asList("JPG","PNG","JPEG","GIF");
+        Assert.notNull(fileName,"File name can not be empty");
+        String fileExtName = fileName.substring(fileName.lastIndexOf(".") + 1);
+        if (!FILE_WHILE_EXT_LIST.contains(fileExtName.toUpperCase())){
+            throw new ApiException(500,"文件格式不正确");
+        }
+        fileName = key + "." + fileExtName;
+        //准备将MultipartFile类型转为File类型
+        File file = null;
+        try {
+            //生成临时文件
+            file = File.createTempFile("temp", null);
+            //将MultipartFile类型转为File类型
+            multipartFile.transferTo(file);
+            //创建存储对象的请求
+            PutObjectRequest putObjectRequest = new PutObjectRequest("photo-1305532292", fileName, file);
+            //执行上传并返回结果信息
+            PutObjectResult putObjectResult = cosClient.putObject(putObjectRequest);
+            //获取上传结果
+            String url ="https://photo-1305532292.cos.ap-beijing.myqcloud.com/"+fileName;
+
+            //将url存入数据库
+            UserPhoto userPhoto = new UserPhoto();
+            userPhoto.setUserId(userId);
+            userPhoto.setPhotoUrl(url);
+            userPhoto.setPhotoIndex(photoIndex);
+            userPhoto.setPhotoCreateTime(new Date());
+            userRepository.insertUserPhoto(userPhoto);
+            return url;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            //关闭客户端
+            cosClient.shutdown();
+            //删除临时文件
+            file.delete();
+        }
+        return null;
+    }
+
+    @Override
+    public List<UserPhotoVO> queryUserPhoto(String userId) {
+        //从数据库查询用户照片
+        List<UserPhoto> list = userRepository.queryUserPhoto(userId);
+        //将UserPhoto转为UserPhotoVO
+        if(CollectionUtils.isEmpty(list)){
+            return null;
+        }
+        List<UserPhotoVO> result = list.stream().map(e->{
+            UserPhotoVO vo = new UserPhotoVO();
+            BeanUtils.copyProperties(e,vo);
+            return vo;
+        }).collect(Collectors.toList());
+        return result;
+    }
+
+    @Override
+    public void updateUserPhotoIndex(UpdatePhotoIndexForm form) {
+        String id = form.getUserId();
+        //格式：photoId , targetIndex
+        List<String> strs = form.getPhotoIndex();
+        strs.forEach(e->{
+            String[] arr = e.split(",");
+            String photoId = arr[0];
+            String targetIndex = arr[1];
+            userPhotoMapper.updateUserPhotoIndex(id,photoId,Integer.parseInt(targetIndex));
+        });
+
+
     }
 }

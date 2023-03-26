@@ -4,9 +4,10 @@ import com.zzz.pro.pojo.dto.UserFriends;
 import com.zzz.pro.utils.MyMapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
-
+@Repository
 public interface UserFriendsMapper extends MyMapper<UserFriends> {
     @Select("select friends_id from user_friends where user_id = #{userId} and friends_status != 2 and friends_status != 4 ; ")
     List<String> queryFriendsList(String userId,int status);

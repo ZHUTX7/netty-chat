@@ -6,6 +6,8 @@ import java.util.*;
 
 import com.zzz.pro.enums.MsgActionEnum;
 import com.zzz.pro.enums.MsgSignFlagEnum;
+import com.zzz.pro.enums.RedisKeyEnum;
+import com.zzz.pro.enums.SexEnum;
 import com.zzz.pro.netty.UserChannelMap;
 import com.zzz.pro.netty.WSServer;
 import com.zzz.pro.netty.dto.ChatMsg;
@@ -13,6 +15,7 @@ import com.zzz.pro.netty.enity.DataContent;
 import com.zzz.pro.pojo.bo.PushUserListBO;
 import com.zzz.pro.pojo.bo.WebSocketMsg;
 import com.zzz.pro.pojo.form.UserFilterForm;
+import com.zzz.pro.pojo.vo.ChatMsgVO;
 import com.zzz.pro.pojo.vo.UserProfileVO;
 import com.zzz.pro.service.ChatMsgService;
 import com.zzz.pro.service.SocialService;
@@ -39,17 +42,15 @@ import org.springframework.util.CollectionUtils;
 public class MsgHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
 
     private static Logger logger = LoggerFactory.getLogger(MsgHandler.class);
-
-
+    RedisUtil redisUtil =   (RedisUtil) SpringUtil.getBean("redisUtil");
+    private UserService userService =   (UserService) SpringUtil.getBean("userService");
     public static ChannelGroup users =
             new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
-
+    private ChatMsgService chatMsgService  = (ChatMsgService) SpringUtil.getBean("chatMsgService");
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame msg)
             throws Exception {
         InetSocketAddress sa = (InetSocketAddress)ctx.channel().remoteAddress();
-
-       // logger.warn("获取到客户端{}请求连接:",sa.getAddress().getHostAddress());
         String content = msg.text();
         Channel currentChannel = ctx.channel();
 
@@ -77,8 +78,7 @@ public class MsgHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> 
         if (action == MsgActionEnum.CONNECT.type) {
             //当websocket 第一次open的时候，初始化channel，把用的channel和userid关联起来
             String deviceId =  dataContent.getExpand();
-            RedisTemplate redisTemplate =   (RedisTemplate) SpringUtil.getBean("redisTemplate");
-            redisTemplate.opsForValue().set("dv"+sendUserId,deviceId);
+            redisUtil.set(RedisKeyEnum.USER_DEVICE_ID.getCode()+sendUserId,deviceId);
             UserChannelMap.getInstance().put(sendUserId, currentChannel);
             //测试x
             logger.info("当前在线用户列表为：");
@@ -109,8 +109,14 @@ public class MsgHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> 
 
             // 1 - 用户不在线
             if(receiveChannel == null){
+                // 调用手机推送
+                ChatMsgVO vo = new ChatMsgVO();
+                vo.setMsgType("text");
+                vo.setContent(chatMsg.getMsg());
+                vo.setSendUserName(sendUserId);
+                String dvId = (String) redisUtil.get(RedisKeyEnum.USER_DEVICE_ID.getCode()+sendUserId);
+                PushUtils.pushMsg(vo,dvId);
 
-                // TODO 调用手机推送
             }
             // 2 - 用户在线
             else {
@@ -131,19 +137,18 @@ public class MsgHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> 
         }
         else if (action == MsgActionEnum.SIGNED.type) {
             List<String> ids = JsonUtils.jsonToPojo(dataContent.getExpand(), List.class);
-            ChatMsgService chatMsgService  = (ChatMsgService) SpringUtil.getBean("chatMsgService");
             chatMsgService.updateMsgStatus(ids);
         }
         //开始拉取用户信息进行匹配
         else if(action == MsgActionEnum.PULL_USER_LIST.type){
             UserFilterForm userFilterForm = new UserFilterForm();
             userFilterForm.setMaxAge(100);
-            userFilterForm.setSex(1);
+            userFilterForm.setSex(SexEnum.MALE.getCode());
             userFilterForm.setMinAge(1);
             userFilterForm.setPos("111");
 
            // UserFilterForm userFilterForm= JsonUtils.jsonToPojo(dataContent.getExpand(), UserFilterForm.class);
-            SocialService socialService  = (SocialService) SpringUtil.getBean("socialServiceImpl");
+            SocialService socialService  = (SocialService) SpringUtil.getBean("socialService");
             //进入匹配池  (1次推30人，30人都确认完喜欢不喜欢后，统一调用接口，批量把不喜欢的用户插入黑名单。同时
             // 客户端继续发送WS请求，服务端接着给用户推）
             List<UserProfileVO> userProfileVOS =  socialService.pushMatchUserList(userFilterForm,sendUserId);
@@ -171,7 +176,6 @@ public class MsgHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> 
         else if(action == MsgActionEnum.GPS.type){
            String userId =  JWTUtils.getClaim(dataContent.getToken(),"userId");
            String gps = dataContent.getExpand();
-           UserService userService =   (UserService) SpringUtil.getBean("userService");
            userService.changeUserGps(userId,gps);
         }
     }

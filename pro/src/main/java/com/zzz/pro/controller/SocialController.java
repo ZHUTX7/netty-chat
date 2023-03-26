@@ -57,9 +57,7 @@ public class SocialController {
     @GetMapping("/getMatchPerson")
     public SysJSONResult getMatchPerson(@RequestHeader("token") String token){
         String userId =  JWTUtils.getClaim(token,"userId");
-        UserBaseInfo u = new UserBaseInfo();
-        u.setUserId(userId);
-        return  ResultVOUtil.success(socialService.getMatchPerson(u));
+        return  ResultVOUtil.success(socialService.getMatchPerson(userId));
     }
 
 

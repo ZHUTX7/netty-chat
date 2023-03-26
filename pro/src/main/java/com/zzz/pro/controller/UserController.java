@@ -1,16 +1,21 @@
 package com.zzz.pro.controller;
 
 
+import com.zzz.pro.config.ApiLimit;
 import com.zzz.pro.config.ApnsConfig;
-import com.zzz.pro.pojo.InterfaceDto.LoginDTO;
+import com.zzz.pro.enums.ResultEnum;
 import com.zzz.pro.pojo.bo.UserBO;
 import com.zzz.pro.pojo.dto.UserBaseInfo;
 import com.zzz.pro.pojo.dto.UserMatch;
 import com.zzz.pro.pojo.dto.UserPersonalInfo;
 import com.zzz.pro.pojo.dto.UserTag;
+import com.zzz.pro.pojo.form.LoginForm;
+import com.zzz.pro.pojo.form.UpdatePhotoIndexForm;
+import com.zzz.pro.pojo.form.UpdateProfileForm;
 import com.zzz.pro.pojo.form.UserGpsForm;
 import com.zzz.pro.pojo.result.SysJSONResult;
 import com.zzz.pro.pojo.vo.RegisterVO;
+import com.zzz.pro.service.SmsService;
 import com.zzz.pro.service.UserService;
 import com.zzz.pro.utils.Img2Base64;
 import com.zzz.pro.utils.JWTUtils;
@@ -18,11 +23,13 @@ import com.zzz.pro.utils.ResultVOUtil;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.io.IOException;
 
 /**
@@ -37,6 +44,8 @@ public class UserController {
 
     @Resource
     private UserService userService;
+    @Resource
+    private SmsService smsService;
 
     @Resource
     private ApnsConfig apnsConfig;
@@ -46,16 +55,16 @@ public class UserController {
         String json = "{\"msg\":\"hello\"}";
         apnsConfig.sendIosMsg(deviceId,json,10000);
     }
-//    @ApiLimit(seconds = 10,maxCount = 3)
+    @ApiLimit(seconds = 10,maxCount = 3)
     @PostMapping("/login")
-    public SysJSONResult login(@RequestBody LoginDTO loginDTO,@RequestHeader("token") String token){
-
-        System.out.println("执行了");
-        userService.userLogin(loginDTO.getLoginParams(),loginDTO.getDeviceId());
+    public SysJSONResult login(@RequestBody LoginForm loginForm, @RequestHeader("token") String token){
         //1.username可为邮箱，手机号，用户名，后端需验证username的类型
-         String type =   loginDTO.getLoginMethod();
+         String type =   loginForm.getLoginMethod();
+         if(!loginForm.getCountryCode().equals("CN")){
+                return ResultVOUtil.error(401,"暂不支持国外手机号登录");
+         }
          switch (type){
-             case "NORMAL":return userService.userLogin(loginDTO.getLoginParams(),loginDTO.getDeviceId());
+             case "NORMAL":return ResultVOUtil.success(userService.userLogin(loginForm));
              case "VERIFY":return userService.userLoginByToken(token);
             // case "TOKEN":loginDTO.getLoginParams().get;;break;
              default:return ResultVOUtil.error(401,"登录类型不存在");
@@ -63,57 +72,12 @@ public class UserController {
 
     }
 
-
-//    //TODO  tag
-//    @PostMapping("/profile")
-//    public SysJSONResult profile(@RequestBody LoginDTO loginDTO,@RequestHeader("token") String token){
-//
-//
-//        //1.username可为邮箱，手机号，用户名，后端需验证username的类型
-//        String type =   loginDTO.getLoginMethod();
-//        switch (type){
-//            case "NORMAL":return userService.userLogin(loginDTO.getLoginParams());
-//            case "VERIFY":return userService.userLoginByToken(token);
-//            // case "TOKEN":loginDTO.getLoginParams().get;;break;
-//            default:return ResultVOUtil.error(401,"登录类型不存在");
-//        }
-//
-//    }
-    //验证注册码
-    @PostMapping("/register/verifyPhone")
-    public SysJSONResult verifyCode(@RequestBody RegisterVO registerVO){
-        //1.验证用户名及密码
-        UserBaseInfo u = new UserBaseInfo();
-        u.setUserPhone(registerVO.getUserPhone());
-        return userService.userIsExist(u);
-
-        //2. 保存用户ID， 将ID与channelID进行绑定，提交消息引擎
-
-
-    }
     @PostMapping("/editUserProfile")
-    public SysJSONResult editUserProfile(@RequestBody UserPersonalInfo userPersonalInfo) {
+    public SysJSONResult editUserProfile(@RequestBody UpdateProfileForm userPersonalInfo) {
         return userService.updateUserProfile(userPersonalInfo);
     }
 
-    // TODO： 手机号登录 or 注册
-    @PostMapping("/register")
-    public SysJSONResult register(@RequestBody RegisterVO registerVO){
-        if(!registerVO.getVerifyCode().equals("6666")){
-            return ResultVOUtil.error(401,"验证码错误");
-        }
-        System.out.printf(registerVO.getUserPhone());
-        System.out.println(registerVO.getPassword());
-        //1.验证用户名及密码
-        UserBaseInfo u = new UserBaseInfo();
-        u.setUserPhone(registerVO.getUserPhone());
-        u.setUserPassword(registerVO.getPassword());
-        return userService.userRegister(u);
 
-        //2. 保存用户ID， 将ID与channelID进行绑定，提交消息引擎
-
-
-    }
 
     @PostMapping("/uploadFaceImageBig")
     @CrossOrigin(maxAge = 3699,origins = "*")
@@ -197,5 +161,41 @@ public class UserController {
         return  ResultVOUtil.success(userService.queryUserPos(targetId));
     }
 
+    //上传用户照片
+    @PostMapping("/uploadUserPhoto")
+    public SysJSONResult uploadUserPhoto(@RequestParam("files") MultipartFile files,HttpServletRequest request) throws IOException {
+        String userId = request.getParameter("userId");
+        Integer photoIndex = Integer.parseInt(request.getParameter("photoIndex")) ;
+           if(files.isEmpty()||files.getSize()==0||files.getInputStream()==null){
+                return ResultVOUtil.error(401,"照片为空！");
+            }
+        return  ResultVOUtil.success( userService.uploadUserPhoto(files,userId,photoIndex));
+    }
 
+    //查询用户图片
+    @GetMapping("/queryUserPhoto")
+    public SysJSONResult queryUserPhoto(@Param("userId") String userId){
+        return  ResultVOUtil.success(userService.queryUserPhoto(userId));
+    }
+
+    //查询用户信息
+    @GetMapping("/queryUserInfo")
+    public SysJSONResult queryUserInfo(@Param("userId") String userId){
+        return  ResultVOUtil.success(userService.queryUserProfile(userId));
+    }
+    //发送短信
+    @GetMapping("/sendSms")
+    public SysJSONResult sendSms(@Param("phone") String phone){
+        return  ResultVOUtil.success(smsService.sendSms(phone));
+    }
+
+    //修改照片位置
+    @PostMapping("/updateUserPhotoIndex")
+    public SysJSONResult updateUserPhotoIndex(@RequestBody @Valid UpdatePhotoIndexForm form, BindingResult result){
+        if(result.hasErrors()){
+            return ResultVOUtil.error(ResultEnum.PARAM_ERROR.getCode(),result.getFieldError().getDefaultMessage());
+        }
+        userService.updateUserPhotoIndex(form);
+        return  ResultVOUtil.success();
+    }
 }

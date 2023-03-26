@@ -11,7 +11,11 @@ public class ApiException extends RuntimeException {
 
     public ApiException(SysJSONResult sysJSONResult) {
         this.sysJSONResult = sysJSONResult;
-        log.error("调用API错误 : "+sysJSONResult.getMsg());
+        //非服务器错误不打印日志
+        if(sysJSONResult.getStatus()>500){
+            log.error("调用API错误 : "+sysJSONResult.getMsg());
+        }
+
     }
 
     public ApiException() {

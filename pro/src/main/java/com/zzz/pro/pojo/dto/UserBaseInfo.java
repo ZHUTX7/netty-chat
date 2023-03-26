@@ -5,6 +5,7 @@ import lombok.Data;
 import javax.persistence.Column;
 import javax.persistence.Table;
 import java.sql.Timestamp;
+import java.util.Date;
 
 
 @Data
@@ -54,9 +55,11 @@ public class UserBaseInfo {
      * 上次登录时间
      */
     @Column(name = "last_login_time")
-    private Timestamp lastLoginTime;
+    private Date lastLoginTime;
 
     @Column(name = "user_coordination")
     private String coordination;
 
+    @Column(name = "device_id")
+    private String deviceId;
 }

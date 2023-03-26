@@ -1,29 +1,29 @@
 package com.zzz.pro.service;
 
-import com.zzz.pro.pojo.dto.UserBaseInfo;
-import com.zzz.pro.pojo.dto.UserMatch;
-import com.zzz.pro.pojo.dto.UserPersonalInfo;
-import com.zzz.pro.pojo.dto.UserTag;
+import com.zzz.pro.pojo.dto.*;
+import com.zzz.pro.pojo.form.LoginForm;
+import com.zzz.pro.pojo.form.UpdatePhotoIndexForm;
+import com.zzz.pro.pojo.form.UpdateProfileForm;
 import com.zzz.pro.pojo.form.UserGpsForm;
 import com.zzz.pro.pojo.result.SysJSONResult;
-import com.zzz.pro.pojo.vo.UserGpsVO;
-import com.zzz.pro.pojo.vo.UserTagVO;
+import com.zzz.pro.pojo.vo.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.util.List;
 
 @Service
 public interface UserService {
-    SysJSONResult userLogin(UserBaseInfo userBaseInfo,String deviceId);
-    SysJSONResult userRegister(UserBaseInfo userBaseInfo);
-    SysJSONResult userIsExist(UserBaseInfo userBaseInfo );
+    LoginResultVO userLogin(LoginForm loginForm);
+    UserBaseInfo userRegister(String phone,String deviceId);
     SysJSONResult delUser(UserBaseInfo userBaseInfo );
     SysJSONResult uploadFaceImg(UserPersonalInfo userPersonalInfo );
     SysJSONResult userLoginByToken(String token );
-    SysJSONResult updateUserProfile(UserPersonalInfo userPersonalInfo );
+    SysJSONResult updateUserProfile(UpdateProfileForm userPersonalInfo );
+    //查询用户信息
+    UserPersonalInfo queryUserProfile(String userId);
 
-    //查找未读信息
-    SysJSONResult getUnReadMessage(UserBaseInfo userBaseInfo );
     void changeUserGps(String userId, String gps);
     void updateUserTag(UserTag userTag);
     List<UserTagVO> queryUserTag(String userId);
@@ -34,4 +34,12 @@ public interface UserService {
     void uploadUserPos(UserGpsForm userGpsForm);
     //查询用户位置
     UserGpsVO queryUserPos(String  userId);
+
+    //上传个人照片
+    String uploadUserPhoto(MultipartFile file, String userId,Integer photoIndex);
+    //查询用户照片
+    List<UserPhotoVO> queryUserPhoto(String userId);
+
+    //修改用户照片索引
+    void updateUserPhotoIndex(UpdatePhotoIndexForm form);
 }

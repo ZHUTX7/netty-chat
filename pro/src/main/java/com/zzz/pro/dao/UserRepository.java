@@ -3,9 +3,11 @@ package com.zzz.pro.dao;
 import com.zzz.pro.mapper.UserBaseInfoMapper;
 import com.zzz.pro.mapper.UserMatchMapper;
 import com.zzz.pro.mapper.UserPersonalInfoMapper;
+import com.zzz.pro.mapper.UserPhotoMapper;
 import com.zzz.pro.pojo.dto.UserBaseInfo;
 import com.zzz.pro.pojo.dto.UserMatch;
 import com.zzz.pro.pojo.dto.UserPersonalInfo;
+import com.zzz.pro.pojo.dto.UserPhoto;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -21,17 +23,19 @@ public class UserRepository {
 
     @Resource
     private UserMatchMapper userMatchMapper;
+    @Resource
+    private UserPhotoMapper userPhotoMapper;
 
     @Resource
     private UserBaseInfoMapper userBaseInfoMapper;
     @Resource
     private UserPersonalInfoMapper userPersonalInfoMapper;
 
-    public boolean queryPhoneIsExist(String phone ) {
+    public UserBaseInfo getUserByPhone(String phone ) {
         UserBaseInfo user = new UserBaseInfo();
         user.setUserPhone(phone);
         UserBaseInfo u = userBaseInfoMapper.selectOne(user);
-        return u != null ? true : false;
+        return u;
     }
 
     //查询用户基本信息
@@ -45,7 +49,6 @@ public class UserRepository {
 
 
     //查询用户信息
-    @Cacheable(key = "#id",value = "userInfo")
     public UserPersonalInfo queryUserPerInfo(String id) {
         UserPersonalInfo u = new UserPersonalInfo();
         u.setUserId(id);
@@ -75,7 +78,6 @@ public class UserRepository {
     }
 
 
-    @CachePut(key = "#id",value = "userInfo")
     public int updateUserProfile(UserPersonalInfo userPersonalInfo) {
         return  userPersonalInfoMapper.updateByPrimaryKey(userPersonalInfo);
     }
@@ -150,6 +152,22 @@ public class UserRepository {
     //查询所有匹配关系
     public List<UserMatch> getAllMatchedUser(){
         return userMatchMapper.selectAll();
+    }
+
+    //查询用户所有照片
+    public List<UserPhoto> queryUserPhoto(String userId){
+        UserPhoto userPhoto = new UserPhoto();
+        userPhoto.setUserId(userId);
+        return userPhotoMapper.select(userPhoto);
+       // return userPhotoMapper.queryUserPhotoList(userId);
+    }
+    //查询用户单个照片
+    public UserPhoto queryUserPhotoById(String userId,Integer photoIndex){
+        return userPhotoMapper.queryUserPhoto(userId,photoIndex);
+    }
+    //插入用户照片
+    public int insertUserPhoto(UserPhoto userPhoto){
+        return userPhotoMapper.insertUserPhoto(userPhoto);
     }
 
 }

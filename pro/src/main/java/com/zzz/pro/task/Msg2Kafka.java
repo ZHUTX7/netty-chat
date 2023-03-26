@@ -53,7 +53,7 @@ public class Msg2Kafka implements SchedulingConfigurer {
                 //1.添加任务内容(Runnable)
                 () -> {
                     //TODO 批量发送
-                    log.info("执行定时任务");
+                   // log.info("执行定时任务");
                 },
                 //2.设置执行周期(Trigger)
                 triggerContext -> {

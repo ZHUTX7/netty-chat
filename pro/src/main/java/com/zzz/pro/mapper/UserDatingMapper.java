@@ -5,9 +5,10 @@ import com.zzz.pro.utils.MyMapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
-
+@Repository
 public interface UserDatingMapper extends MyMapper<UserDating> {
     @Update("Update user_dating set status = #{status} where user_id=#{userId} and user_targetid =#{targetId}")
     public void updateMyselfStatus(@Param("userId") String userId, @Param("targetId") String targetId, @Param("status")Integer status);

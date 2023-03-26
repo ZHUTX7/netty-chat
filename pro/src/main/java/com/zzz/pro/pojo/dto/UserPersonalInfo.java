@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.Date;
 
 @Data
 @Table(name = "user_personal_info")
@@ -22,7 +23,7 @@ public class UserPersonalInfo {
      * 用户性别 1男 0女
      */
     @Column(name = "user_sex")
-    private int userSex;
+    private String userSex;
 
     /**
      * 用户昵称
@@ -31,10 +32,10 @@ public class UserPersonalInfo {
     private String userNickname;
 
     /**
-     * 年龄
+     * 出生日期
      */
-    @Column(name = "user_gender")
-    private Integer userGender;
+    @Column(name = "user_birthdate")
+    private Date userBirthdate;
 
     /**
      * 个性签名
