@@ -13,7 +13,7 @@ public class ChatMsg {
      * 消息ID
      */
     @Column(name = "msg_id")
-    private Long msgId;
+    private String msgId;
 
     /**
      * 发送人

@@ -5,6 +5,7 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.sql.Timestamp;
+import java.util.Date;
 
 @Data
 @Table(name = "user_friends")
@@ -19,5 +20,5 @@ public class UserFriends {
     @Column(name = "friends_status")
     private Integer friendsStatus;
     @Column(name = "creat_time")
-    private Timestamp creatTime;
+    private Date creatTime;
 }

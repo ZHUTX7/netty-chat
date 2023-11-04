@@ -1,6 +1,6 @@
 package com.zzz.pro.pojo.bo;
 
-import com.zzz.pro.pojo.vo.UserProfileVO;
+import com.zzz.pro.controller.vo.UserProfileVO;
 import lombok.Data;
 
 import java.io.Serializable;

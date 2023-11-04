@@ -69,5 +69,7 @@
     FROM
       user_match
     WHERE my_user_id = #{userId};
+    AND active_state != 23;
   </select>
+
 </mapper>

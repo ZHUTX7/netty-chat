@@ -3,9 +3,6 @@ package com.zzz.pro.consumer;
 
 import com.zzz.pro.mapper.ChatMsgMapper;
 import com.zzz.pro.pojo.dto.ChatMsg;
-import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.common.protocol.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -19,6 +16,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 
 @Component
@@ -28,23 +26,17 @@ public class Msg2Kafka {
     @Resource
     private ChatMsgMapper chatMsgMapper;
 
-
-    @KafkaListener(topics = "3ZStudios",
-            groupId = "consumer-group-" + "3ZStudios")
-    public void onMessage(ChatMsg chatMsg) {
-        System.out.println(chatMsg.getMessageType());
-        chatMsgMapper.insertMsg(chatMsg);
-        //手动提交, Acknowledgment ack
-       // logger.info("Kafka to Mysql 执行状态{},消息内容{}", chatMsg.getMessage());
+    @KafkaListener(topics = "3ZStudios", groupId = "consumer-group-" + "3ZStudios", containerFactory = "batchFactory")
+    public void onMessages(List<ChatMsg> chatMsgList, Acknowledgment acknowledgment) {
+        try {
+            chatMsgMapper.insertList(chatMsgList);
+            // 手动提交ack，表示消息已成功处理
+            acknowledgment.acknowledge();
+            logger.info("批量成功");
+        } catch (Exception e) {
+            // 处理消息过程中发生错误，可以选择记录日志或者进行其他处理
+            logger.error("批量失败", e.getMessage());
+        }
     }
 
-    //批量插入
-//    @KafkaListener(topics = "3ZStudios",
-//            groupId = "consumer-group-" + "3ZStudios")
-//    public void onMessageBatch(List<Message<String>> list, Consumer consumer) {
-//        System.out.println(chatMsg.getMessageType());
-//        chatMsgMapper.insertMsg(chatMsg);
-//        //手动提交, Acknowledgment ack
-//       // logger.info("Kafka to Mysql 执行状态{},消息内容{}", chatMsg.getMessage());
-//    }
 }

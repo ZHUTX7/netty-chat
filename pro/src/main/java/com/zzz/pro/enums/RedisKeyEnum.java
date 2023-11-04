@@ -8,6 +8,7 @@ package com.zzz.pro.enums;
 
 public enum RedisKeyEnum implements CodeEnum {
     USER_ONLINE_SUM("ur:onLienSum","在线用户数"),
+    ALL_USER_VO("ur:vo","所有用户VO信息"),
     USER_INFO("ur:urInfo","用户信息"),
     USER_POSITION("ur:pos:","用户位置"),
     USER_DISTANCE("ur:distance:","用户距离目标地点地址"),
@@ -16,6 +17,14 @@ public enum RedisKeyEnum implements CodeEnum {
     DISLIKE_USER_POOL("match:dislikePool:","黑名单"),
     MATCH_SELECTED_POOL("match:waitingPool:","对冲池"),
     USER_DEVICE_ID("devId:","用户设备ID"),
+    USER_UNREAD_MSG_COUNT("ur:unread:","用户未读消息条数"),
+
+    USER_UN_MATCH_LIST("pool:matchable:","推荐用户匹配池"),
+
+    ALL_USER_POOL("pool:all","a"),
+    USER_BLACK_POOL("pool:ur:","a"),
+    USER_SELECTED_POOL("sel","a")
+
     ;
     private String code;
 
@@ -27,7 +36,7 @@ public enum RedisKeyEnum implements CodeEnum {
     }
 
     @Override
-    public Object getCode() {
+    public String getCode() {
         return this.code;
     }
 

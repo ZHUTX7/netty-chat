@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.Date;
 
 @Data
 @Table(name = "user_match")
@@ -29,4 +30,6 @@ public class UserMatch {
     @Column(name = "active_state")
     private Integer activeState;
 
-   }
+    @Column(name = "match_time")
+    private Date matchTime;
+}

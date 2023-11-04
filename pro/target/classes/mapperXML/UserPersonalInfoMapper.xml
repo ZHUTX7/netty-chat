@@ -8,7 +8,7 @@
     <result column="user_id" property="userId" jdbcType="VARCHAR" />
     <result column="user_nickname" property="userNickname" jdbcType="VARCHAR" />
     <result column="user_sex" property="userSex" jdbcType="INTEGER" />
-    <result column="user_birthdate" property="userBirthdate" jdbcType="DATE" />
+    <result column="user_birthdate" property="userBirthdate" jdbcType="INTEGER" />
     <result column="user_motto" property="userMotto" jdbcType="VARCHAR" />
     <result column="user_memo" property="userMemo" jdbcType="VARCHAR" />
     <result column="user_education" property="userEducation" jdbcType="INTEGER" />
@@ -18,8 +18,7 @@
     <result column="user_hometown" property="userHometown" jdbcType="VARCHAR" />
     <result column="user_height" property="userHeight" jdbcType="INTEGER" />
     <result column="user_weight" property="userWeight" jdbcType="INTEGER" />
-    <result column="user_face_image" property="userFaceImage" jdbcType="VARCHAR" />
-    <result column="user_face_image_big" property="userFaceImageBig" jdbcType="VARCHAR" />
+    <result column="real_auth" property="realAuth" jdbcType="TINYINT" />
   </resultMap>
 
   <select id="queryUserOutlineInfo" resultType="java.util.Map"  parameterType="java.util.Map">
@@ -31,4 +30,51 @@
       #{user_id}
     </foreach>
   </select>
+
+
+  <select id="queryUserVO" resultType="com.zzz.pro.controller.vo.UserVO"  >
+    SELECT ui.user_id as userId, ui.user_nickname as userNickname, up.photo_url as photoUrl, ui.user_birthdate as userBirthdate, ui.user_sex as userSex,
+           up.real_auth as realAuth
+    FROM user_personal_info ui
+           LEFT JOIN user_photo up ON ui.user_id = up.user_id AND up.photo_index = 0
+    WHERE ui.user_id = #{user_id} limit 1;
+
+  </select>
+
+
+  <select id="queryAllUserVO" resultType="com.zzz.pro.controller.vo.UserVO"  >
+    SELECT ui.user_id as userId, ui.user_nickname as userNickname, up.photo_url as photoUrl, ui.user_birthdate as userBirthdate, ui.user_sex as userSex
+    ui.user_hometown as userHometown ,up.photo_name as userImage
+    FROM user_personal_info ui left join user_photo up on ui.user_id = up.user_id and up.photo_index = 0
+  </select>
+
+  <select id="queryAllByUserId" parameterType="map"  resultType="UserPersonalInfo">
+    SELECT * FROM user_personal_info
+    WHERE user_id IN
+    <foreach collection="userIdList" item="userId" open="(" separator="," close=")">
+      #{userId}
+    </foreach>
+  </select>
+
+  <!-- 指定更新项 -->
+  <update id="updateSelectUserPersonal" parameterType="com.zzz.pro.controller.form.UpdateProfileForm">
+    UPDATE user_personal_info
+    <set>
+      <!-- 使用<if>标签来判断是否需要更新字段 -->
+      <if test="userNickname != null">user_nickname = #{userNickname},</if>
+      <if test="userSex != null">user_sex = #{userSex},</if>
+      <if test="userBirthdate != null">user_birthdate = #{userBirthdate},</if>
+      <if test="userMotto != null">user_motto = #{userMotto},</if>
+      <if test="userMemo != null">user_memo = #{userMemo},</if>
+      <if test="userEducation != null">user_education = #{userEducation},</if>
+      <if test="userProfession != null">user_profession = #{userProfession},</if>
+      <if test="userConstellation != null">user_constellation = #{userConstellation},</if>
+      <if test="userLocation != null">user_location = #{userLocation},</if>
+      <if test="userHometown != null">user_hometown = #{userHometown},</if>
+      <if test="userHeight != null">user_height = #{userHeight},</if>
+      <if test="userWeight != null">user_weight = #{userWeight},</if>
+    </set>
+    WHERE user_id = #{userId}
+  </update>
+
 </mapper>

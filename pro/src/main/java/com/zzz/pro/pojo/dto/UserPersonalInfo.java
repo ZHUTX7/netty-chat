@@ -35,7 +35,7 @@ public class UserPersonalInfo {
      * 出生日期
      */
     @Column(name = "user_birthdate")
-    private Date userBirthdate;
+    private Integer userBirthdate;
 
     /**
      * 个性签名
@@ -91,16 +91,6 @@ public class UserPersonalInfo {
     @Column(name = "user_weight")
     private Integer userWeight;
 
-    /**
-     * 用户头像
-     */
-    @Column(name = "user_face_image")
-    private String userFaceImage;
-
-    /**
-     * 用户高清头像
-     */
-    @Column(name = "user_face_image_big")
-    private String userFaceImageBig;
-
+    @Column(name = "real_auth")
+    private int realAuth;
 }

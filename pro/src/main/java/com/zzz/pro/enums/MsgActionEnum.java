@@ -14,7 +14,8 @@ public enum MsgActionEnum {
     PULL_FRIEND(5, "拉取通信好友"),
     PULL_USER_LIST(6,"拉取用户信息"),
     GPS(7,"位置数据"),
-    SYSTEM(0,"系统消息"),;
+    SYSTEM(0,"系统消息"),
+    USER_IS_WRITING(8,"用户正在输入");
 
     public final Integer type;
     public final String content;

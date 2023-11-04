@@ -3,7 +3,7 @@ package com.zzz.pro.aop;
 import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.zzz.pro.config.ApiLimit;
 import com.zzz.pro.utils.JsonUtils;
-import com.zzz.pro.utils.RedisUtil;
+import com.zzz.pro.utils.RedisStringUtil;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
@@ -19,7 +19,7 @@ import java.util.Map;
 public class AccessLimitInterceptor extends HandlerInterceptorAdapter {
 
     @Resource
-    private RedisUtil redisUtil;
+    private RedisStringUtil redisStringUtil;
 
     private Map<String,String> resultMap = new HashMap<>(){
         {
@@ -58,13 +58,13 @@ public class AccessLimitInterceptor extends HandlerInterceptorAdapter {
 
             String ak = request.getLocalAddr() + key;
             //从redis中获取用户访问的次数
-            Integer count = (Integer) redisUtil.get(ak);
+            Integer count = Integer.parseInt(redisStringUtil.get(ak)) ;
             if (count == null) {
                 //第一次访问
-                redisUtil.set(ak, 1, seconds);
+                redisStringUtil.set(ak, 1+"", seconds);
             } else if (count < maxCount) {
                 //加1
-                redisUtil.incr(ak, 1);
+                redisStringUtil.incr(ak, 1);
             } else {
                 //超出访问次数
 

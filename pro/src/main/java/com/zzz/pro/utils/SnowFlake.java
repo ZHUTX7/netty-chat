@@ -3,7 +3,7 @@ package com.zzz.pro.utils;
 /**
  * snowflake算法 -- java实现
  */
-public class SnowFlake {
+public class  SnowFlake {
 
     /** 开始时间截 (2015-01-01) */
     private final long twepoch = 1420041600000L;

@@ -1,5 +1,7 @@
 package com.zzz.pro.utils;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.data.redis.core.BoundListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -11,12 +13,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-@Component
+@Component("redisUtil")
 public class RedisUtil
 {
     @Resource
     private RedisTemplate< String, Object > redisTemplate;
-    // =============================common============================
+
+    public RedisTemplate< String, Object > getRedisTemplate()
+    {
+        return redisTemplate;
+    }
+
+
     /**
      * 26
      * 指定缓存失效时间
@@ -569,6 +577,7 @@ public class RedisUtil
             return null;
         }
     }
+
     /**
      * 402
      * 获取list缓存的长度
@@ -613,76 +622,8 @@ public class RedisUtil
             return null;
         }
     }
-    /**
-     * 431
-     * 将list放入缓存
-     * 432
-     *
-     * @param key   键
-     *              433
-     * @param value 值
-     *              434
-     * @return 436
-     */
-    public boolean lSet(String key, Object value)
-    {
-        try
-        {
-            redisTemplate.opsForList().rightPush(key, value);
-            return true;
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-            return false;
-        }
-    }
-    /**
-     * 将list放入缓存
-     *
-     * @param key   键
-     * @param value 值
-     * @param time  时间(秒)
-     * @return
-     */
-    public boolean lSet(String key, Object value, long time)
-    {
-        try
-        {
-            redisTemplate.opsForList().rightPush(key, value);
-            if(time > 0) expire(key, time);
-            return true;
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-            return false;
-        }
-    }
-    /**
-     * 467
-     * 将list放入缓存
-     * 468
-     *
-     * @param key   键
-     *              469
-     * @param value 值
-     *              470
-     * @return 472
-     */
-    public boolean lSet(String key, List < Object > value)
-    {
-        try
-        {
-            redisTemplate.opsForList().rightPushAll(key, value);
-            return true;
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-            return false;
-        }
-    }
+
+
     /**
      * 484
      * 将list放入缓存
@@ -765,4 +706,5 @@ public class RedisUtil
             return 0;
         }
     }
+
 }
