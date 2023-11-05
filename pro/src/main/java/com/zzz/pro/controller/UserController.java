@@ -161,4 +161,10 @@ public class UserController {
         return  ResultVOUtil.success();
 
     }
+
+    //TEST 清除用户白名单
+    @GetMapping("/clear/black")
+    public void clearBlackList(@RequestParam("userId") String userId){
+
+    }
 }

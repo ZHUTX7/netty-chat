@@ -80,7 +80,7 @@ public class UserServiceImpl implements UserService {
 
         // 4. 创建token
         Map<String, String> info = new HashMap<>();
-        info.put("userRole", userBaseInfo.getUserRole() + "");
+        info.put("userRole", userBaseInfo.getUserRole());
         info.put("userId", userBaseInfo.getUserId());
         info.put("deviceId", userBaseInfo.getDeviceId());
         //30分钟过期

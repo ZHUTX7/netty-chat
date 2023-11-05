@@ -49,7 +49,7 @@ public class UserBaseInfo {
      * SVIP ： 3
      */
     @Column(name = "user_role")
-    private Integer userRole;
+    private String userRole;
 
     /**
      * 上次登录时间

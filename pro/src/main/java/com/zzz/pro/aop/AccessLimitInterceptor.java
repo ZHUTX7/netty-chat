@@ -5,6 +5,7 @@ import com.zzz.pro.config.ApiLimit;
 import com.zzz.pro.utils.JsonUtils;
 import com.zzz.pro.utils.RedisStringUtil;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
@@ -58,16 +59,20 @@ public class AccessLimitInterceptor extends HandlerInterceptorAdapter {
 
             String ak = request.getLocalAddr() + key;
             //从redis中获取用户访问的次数
-            Integer count = Integer.parseInt(redisStringUtil.get(ak)) ;
-            if (count == null) {
-                //第一次访问
+            String value = redisStringUtil.get(ak);
+            //第一次访问
+            if(StringUtils.isEmpty(value)){
                 redisStringUtil.set(ak, 1+"", seconds);
-            } else if (count < maxCount) {
+                return true;
+            }
+
+            Integer count = Integer.parseInt(value) ;
+            if (count < maxCount) {
                 //加1
                 redisStringUtil.incr(ak, 1);
+                return true;
             } else {
                 //超出访问次数
-
                 render(response, result);
                 return false;
             }

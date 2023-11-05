@@ -2,7 +2,7 @@ package com.zzz.pro.service.api;
 
 import com.zzz.pro.pojo.bo.SmsBO;
 import com.zzz.pro.utils.MsmConstantUtils;
-import com.zzz.pro.utils.RedisUtil;
+import com.zzz.pro.utils.RedisStringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -13,14 +13,14 @@ import javax.annotation.Resource;
 @Service
 public class SmsService {
     @Resource
-    private RedisUtil redisUtil;
+    private RedisStringUtil redisStringUtil;
 
     //发送短信 ,返回验证码
     public String sendSms(String phoneNumber){
         String code =  MsmConstantUtils.generateValidateCode(6);
         if(MsmConstantUtils.sendPhone(phoneNumber,code)) {
             log.info("短信发送成功，手机号：{}，验证码：{}",phoneNumber,code);
-            redisUtil.set(phoneNumber,code,120);
+            redisStringUtil.set(phoneNumber,code,120);
             return code;
         }
         else {

@@ -8,7 +8,7 @@ import java.util.Date;
 public class LoginResultVO {
     private String userId;
     private String userPhone;
-    private Integer userRole;
+    private String userRole;
     private Date lastLoginTime;
     //是否为新用户
     private Integer isNewUser = 0;

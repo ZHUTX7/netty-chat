@@ -7,7 +7,6 @@ import com.zzz.pro.mapper.UserPhotoMapper;
 import com.zzz.pro.pojo.dto.UserPersonalInfo;
 import com.zzz.pro.controller.vo.UserVO;
 import com.zzz.pro.utils.RedisStringUtil;
-import com.zzz.pro.utils.RedisUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
