@@ -18,7 +18,7 @@ import javax.annotation.Resource;
 
 /**
  * @Author zhutianxiang
- * @Description TODO
+ * @Description 
  * @Date 2023/8/3 00:00
  * @Version 1.0
  */
@@ -66,7 +66,7 @@ public class DatingController {
     @GetMapping("/queryNearby")
     public SysJSONResult queryNearby(@RequestHeader("refreshToken") String token,@Param("count") Integer count,@Param("distance") Integer distance)  {
         String userId =  JWTUtils.getClaim(token,"userId");
-        distance = 99999999;
+
         System.out.println("-------");
         System.out.printf(token);
         System.out.println("-------");
@@ -124,5 +124,11 @@ public class DatingController {
         return  ResultVOUtil.success();
     }
 
+    @GetMapping("/skip")
+    public SysJSONResult<Object> datingSkip(@RequestHeader("refreshToken") String token,@Param("targetId") String targetId){
+        String userId =  JWTUtils.getClaim(token,"userId");
+        datingService.datingSkipBySKU(userId,targetId);
+        return  ResultVOUtil.success();
+    }
 
 }

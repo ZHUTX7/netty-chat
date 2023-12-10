@@ -41,6 +41,8 @@ public class MapService {
 
     @Resource
     MapSdkService mapSdkService;
+    @Resource
+    DatingService datingService;
 
     //推荐见面地点
     public POI recommendLocale(String userId, String targetId, Integer distance) {
@@ -52,7 +54,9 @@ public class MapService {
             return poi;
         }
         poi = mapSdkService.queryNearbyService(point[0], point[1], distance);
-
+        if(poi.getPoiStatusCode().equals(ResultEnum.DATING_POINT_NOT_SUIT.getCode())){
+            datingService.datingSkip(userId,targetId);
+        }
         redisUtil.set(poiId,poi);
         return poi;
     }
@@ -62,7 +66,6 @@ public class MapService {
 //        List<String> list = redisUtil.lGet(RedisKeyEnum.USER_UN_MATCH_LIST.getCode()+userId);
         if(CollectionUtils.isEmpty(list)){
             return nearBySearchByUserId(userId, distance);
-
         }
         return list;
 
@@ -139,7 +142,7 @@ public class MapService {
     public List<String> searchNearbyName(double distance, String userId) {
         List<String> users = new ArrayList<>();
         List<Point> position = redisUtil.getRedisTemplate().opsForGeo().position(KEY, userId);
-        Distance distanceArg = new Distance(distance, Metrics.NEUTRAL);
+        Distance distanceArg = new Distance(distance, Metrics.KILOMETERS);
         RedisGeoCommands.GeoRadiusCommandArgs geoRadiusArgs = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs().includeDistance().sortAscending();
         // 1.GEORADIUS获取附近范围内的信息
         GeoResults<RedisGeoCommands.GeoLocation<Object>> reslut =
@@ -149,7 +152,8 @@ public class MapService {
         //3.返回计算后的信息
         content.forEach(a -> {
             if(!userId.equals(a.getContent().getName())) {
-                users.add(a.getContent().getName()+"-"+a.getDistance().getValue());
+                double num = Math.floor(a.getDistance().getValue()/1000);
+                users.add(a.getContent().getName()+"-"+num);
             }
         });
         return users;

@@ -16,7 +16,8 @@ import javax.validation.constraints.NotNull;
 public class BuyForm {
     @NotEmpty
     private String userId;
-    private String productId;
+    @NotNull
+    private String skuId;
     @NotNull
     private Integer buyCount;
 }

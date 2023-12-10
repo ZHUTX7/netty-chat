@@ -226,12 +226,8 @@ public class MsgHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> 
             return;
         }
         ChatMsgService chatMsgService  = (ChatMsgService) SpringUtil.getBean("chatMsgService");
-
-        chatMsgService.updateMsgStatus(systemMsg.getMsgList());
-        PushUtils pushUtils = (PushUtils) SpringUtil.getBean("pushUtils");
-        RedisStringUtil redisUtil = (RedisStringUtil) SpringUtil.getBean("redisStringUtil");
-        String dvId = redisUtil.get(RedisKeyEnum.USER_DEVICE_ID.getCode() + dataContent.getUserId());
-        pushUtils.clearIosBadge(dvId,systemMsg.getMsgList().size());
+        //TODO 这个数据吐kafka消费
+        chatMsgService.updateMsgStatus(dataContent.getUserId(),systemMsg.getMsgList());
     }
     private void handlePullUserMsg(Channel currentChannel,String sendUserId) {
 //        UserFilterForm userFilterForm = new UserFilterForm();

@@ -3,19 +3,21 @@ package com.zzz.pro.service;
 import com.zzz.pro.enums.*;
 import com.zzz.pro.exception.ApiException;
 import com.zzz.pro.mapper.*;
+import com.zzz.pro.netty.UserChannelMap;
 import com.zzz.pro.pojo.dto.*;
 import com.zzz.pro.pojo.result.SysJSONResult;
 import com.zzz.pro.controller.vo.*;
-import com.zzz.pro.utils.CRCUtil;
-import com.zzz.pro.utils.PushUtils;
-import com.zzz.pro.utils.RedisStringUtil;
-import com.zzz.pro.utils.ResultVOUtil;
+import com.zzz.pro.task.Msg2Kafka;
+import com.zzz.pro.utils.*;
+import io.netty.channel.Channel;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
@@ -41,7 +43,8 @@ public class MatchService {
     UserVOCache userVOCache;
     @Resource
     MapService mapService;
-
+    @Resource
+    private UserPropsBagsMapper userPropsBagsMapper;
     @Resource
     RecommendPoolService recommendPoolService;
 
@@ -69,9 +72,9 @@ public class MatchService {
         String sex = userPersonalInfo.getUserSex();
         //进入Redis 匹配用户池
         if (sex.equals(SexEnum.MALE.getCode())) {
-            redisStringUtil.hset(RedisKeyEnum.BOYS_WAITING_POOL.getCode(), user.getUserId(), userProfileVO);
+            redisStringUtil.hset(RedisKeyEnum.BOYS_WAITING_POOL.getCode(), user.getUserId(), "on");
         } else if (sex.equals(SexEnum.FEMALE.getCode())) {
-            redisStringUtil.hset(RedisKeyEnum.GIRLS_WAITING_POOL.getCode(), user.getUserId(), userProfileVO);
+            redisStringUtil.hset(RedisKeyEnum.GIRLS_WAITING_POOL.getCode(), user.getUserId(), "on");
         }
 
     }
@@ -228,6 +231,32 @@ public class MatchService {
 
 
 
-
+   public void chatDelay(String userId,String targetId){
+       UserPropsBags consumerSKU =   userPropsBagsMapper.selectOneSKU(userId,"INFINITY_CHAT");
+       if(ObjectUtils.isEmpty(consumerSKU) || consumerSKU.getProductCount() <= 0){
+           throw new ApiException(ResultEnum.PROPS_NOT_ENOUGH.getCode(), "您没有该道具");
+       }
+       consumerSKU.setProductCount(consumerSKU.getProductCount() - 1);
+       userPropsBagsMapper.updateByPrimaryKeySelective(consumerSKU);
+       com.zzz.pro.netty.enity.ChatMsg chatMsg = new com.zzz.pro.netty.enity.ChatMsg();
+       chatMsg.setMsg("< 提示：对方刚刚使用聊天延时道具～ >");
+       chatMsg.setMsgId(chatMsg.getMsgId()+"1");
+       chatMsg.setMsgType(MsgTypeEnum.MESSAGE_ALERT.getCode());
+       chatMsg.setReceiverId(userId);
+       chatMsg.setSenderId(targetId);
+       Channel receiveChannel = UserChannelMap.getInstance().get(targetId);
+       int sign = 0;
+       if(receiveChannel != null){
+           receiveChannel.writeAndFlush(new TextWebSocketFrame(JsonUtils.objectToJson(chatMsg)));
+           sign =1;
+       }
+       //信息入库
+       chatMsg.setReceiverId(targetId);
+       chatMsg.setSenderId(userId);
+       com.zzz.pro.pojo.dto.ChatMsg dto =  BeanCopy.copy(chatMsg);
+       dto.setSignFlag(sign);
+       Msg2Kafka msg2Kafka  = (Msg2Kafka) SpringUtil.getBean("msg2Kafka");
+       msg2Kafka.asyncSend(dto);
+   }
 
 }

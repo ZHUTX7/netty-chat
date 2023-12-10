@@ -32,5 +32,12 @@ public class CRCUtil {
     public static void main(String[] args) {
         System.out.println(crc32HexBy2Id("10001","10002"));
         System.out.println(crc32HexBy2Id("10002","10001"));
+        String s = "abcd";
+
+        String s1 = new String(s);
+
+        if (s == s1) System.out.println("the same");
+
+        if (s.equals(s1)) System.out.println("equals");
     }
 }

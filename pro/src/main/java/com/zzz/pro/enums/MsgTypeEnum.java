@@ -16,7 +16,7 @@ public enum MsgTypeEnum implements CodeEnum<Integer>{
     MESSAGE_PHONECALL_ACCEPT(11,"接受语音通话" ),
     MESSAGE_PHONECALL_FINISHED(12,"结束语音通话" ),
     MESSAGE_SYSTEM(20,"系统消息" ),
-    MESSAGE_ALERT(500,"违规警告" ),
+    MESSAGE_ALERT(500,"系统提示消息" ),
     ;
     private Integer code;
 

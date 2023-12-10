@@ -2,9 +2,7 @@ package com.zzz.pro.pojo.dto;
 
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.math.BigDecimal;
 
 @Data
@@ -12,7 +10,8 @@ import java.math.BigDecimal;
 public class AmeenoProduct {
     @Id
     @Column(name = "product_id")
-    private Integer productId;
+    @GeneratedValue(generator="UUID")
+    private String productId;
 
     /**
      * 服务名称
@@ -27,12 +26,6 @@ public class AmeenoProduct {
     private String productDesc;
 
     /**
-     * 服务单价
-     */
-    @Column(name = "product_price")
-    private BigDecimal productPrice;
-
-    /**
      * 服务类型
      * "1 = COUNT_SKU_PRODUCT"
      " 2 = DURATION_SKU_PRODUCT"
@@ -41,21 +34,7 @@ public class AmeenoProduct {
     @Column(name = "product_type")
     private Integer productType;
 
-    /**
-     * 服务生效时长
-     */
-    @Column(name = "product_available_day")
-    private Integer productAvailableDay;
 
-
-    /**
-     * "CNY"
-"USD"
-"GBP"
-
-     */
-    @Column(name = "product_currency")
-    private String productCurrency;
 
 
 }

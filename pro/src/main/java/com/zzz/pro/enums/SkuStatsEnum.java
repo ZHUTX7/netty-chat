@@ -3,24 +3,26 @@ package com.zzz.pro.enums;
 /**
  * @Author zhutianxiang
  * @Description 
- * @Date 2023/10/17 17:19
+ * @Date 2023/11/6 15:21
  * @Version 1.0
  */
-public enum ImageDataTypeEnum implements CodeEnum {
-    IMAGE_Base64(1,"base64"),
-    IMAGE_URL(2,"url"),
+public enum SkuStatsEnum implements CodeEnum<String>{
+
+
+    SALE("SALING","销售中"),
+    OFF_SALE("OffShelf","下架"),
     ;
-    private Integer code;
+    private String code;
 
     private String title;
 
-    ImageDataTypeEnum(Integer code, String title) {
+    SkuStatsEnum(String code, String title) {
         this.code = code;
         this.title = title;
     }
 
     @Override
-    public Integer getCode() {
+    public String getCode() {
         return code;
     }
 

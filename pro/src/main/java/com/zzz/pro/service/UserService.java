@@ -19,7 +19,7 @@ public interface UserService {
 
     SysJSONResult updateUserProfile(UpdateProfileForm userPersonalInfo );
     //查询用户信息
-    UserPersonalInfo queryUserProfile(String userId);
+    UserVO queryUserVO(String userId);
 
     void changeUserGps(String userId, double[] gps);
     //上传用户位置
@@ -34,5 +34,9 @@ public interface UserService {
 
     //用户真人认证
     void userRealAuth(UserRealAuthForm form);
+
+    void updatePhone(UpdatePhoneForm form);
+
+    void deleteUserBlackList(String userId);
 
 }

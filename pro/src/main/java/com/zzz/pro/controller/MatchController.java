@@ -1,5 +1,6 @@
 package com.zzz.pro.controller;
 
+import com.zzz.pro.mapper.UserPropsBagsMapper;
 import com.zzz.pro.pojo.dto.UserMatch;
 import com.zzz.pro.controller.form.UserFilterForm;
 import com.zzz.pro.pojo.result.SysJSONResult;
@@ -25,7 +26,8 @@ public class MatchController {
     private MatchService matchService;
     @Resource
     private RecommendPoolService recommendPoolService;
-
+    @Resource
+    private UserPropsBagsMapper userPropsBagsMapper;
     //开始匹配
     @GetMapping("/start")
     public SysJSONResult match(@RequestHeader("refreshToken") String token){
@@ -89,4 +91,10 @@ public class MatchController {
         return  ResultVOUtil.success();
     }
 
+    @GetMapping("/chat/delay")
+    public SysJSONResult<Object> chatDelay(@RequestHeader("refreshToken") String token,@Param("targetId") String targetId){
+        String userId =  JWTUtils.getClaim(token,"userId");
+        matchService.chatDelay(userId,targetId);
+        return  ResultVOUtil.success();
+    }
 }

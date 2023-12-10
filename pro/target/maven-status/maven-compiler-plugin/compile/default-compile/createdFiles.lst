@@ -25,11 +25,9 @@ com/zzz/pro/controller/form/DatingScoreForm.class
 com/zzz/pro/controller/form/ReportFeedbackForm.class
 com/zzz/pro/pojo/bo/ValidationResultBO.class
 com/zzz/pro/netty/enity/DataContent.class
-com/zzz/pro/helper/OrderBuilder.class
 com/zzz/pro/controller/vo/DatingStatusVO.class
 com/zzz/pro/utils/MyMapper.class
 com/zzz/pro/service/OderService.class
-com/zzz/pro/controller/vo/SkuVO.class
 com/zzz/pro/config/KafkaConfig.class
 com/zzz/pro/task/Msg2Kafka.class
 com/zzz/pro/controller/vo/MatchUserVO.class
@@ -44,6 +42,7 @@ com/zzz/pro/controller/SKUController.class
 com/zzz/pro/controller/form/UpdateProfileForm.class
 com/zzz/pro/pojo/dto/UserMatch.class
 com/zzz/pro/controller/form/DeletePhotoForm.class
+com/zzz/pro/utils/RedisStringUtil$1.class
 com/zzz/pro/service/UserService.class
 com/zzz/pro/controller/vo/LoginVO.class
 com/zzz/pro/enums/MsgTypeEnum.class
@@ -58,6 +57,8 @@ com/zzz/pro/controller/form/UserTagForm.class
 com/zzz/pro/controller/form/ReportForm.class
 com/zzz/pro/netty/UserChannelMap.class
 com/zzz/pro/service/ChatMsgService.class
+com/zzz/pro/utils/RedisStringUtil.class
+com/zzz/pro/config/ThreadPoolConfig.class
 com/zzz/pro/controller/vo/UserVO.class
 com/zzz/pro/config/ApnsConfig.class
 com/zzz/pro/controller/form/DeleteSettingForm.class
@@ -87,6 +88,8 @@ com/zzz/pro/utils/JsonUtils.class
 com/zzz/pro/service/api/ContentAnalyseService.class
 com/zzz/pro/controller/form/BuyForm.class
 com/zzz/pro/controller/vo/FriendsVO.class
+com/zzz/pro/utils/RedisStringUtil$2.class
+com/zzz/pro/controller/form/UpdatePhoneForm.class
 com/zzz/pro/pojo/result/SysJSONResult.class
 com/zzz/pro/exception/ApiException.class
 com/zzz/pro/controller/vo/POI$Navi.class

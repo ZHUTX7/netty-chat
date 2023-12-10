@@ -44,12 +44,28 @@ public enum ResultEnum implements CodeEnum<Integer>{
     //客户端传值错误
     PARAM_ERROR(401, "客户端传值错误"),
 
+    //用户业务报错 2开头
+    PHONE_IS_EXIST(2001,"用户手机号已经被注册"),
 
 
     //---------支付业务报错 3开头
+
     ORDER_INIT_FAILED(3001,"订单初始化失败"),
-    ORDER_UPDATE_FAILED(3002,"订单更新失败");
+    ORDER_UPDATE_FAILED(3002,"订单更新失败"),
+    SKU_NOT_EXIST(3003,"商品不存在或已下架"),
+
+    //----道具使用错误 5开头
+    PROPS_NOT_ENOUGH(5001,"sku道具不足"),
+
+    //约会错误 6开头
+    DATING_POINT_NOT_EXIST(6001,"约会地点不存在"),
+    DATING_POINT_NOT_OPEN(6002,"约会地点未在营业时间"),
+    DATING_POINT_NOT_SUIT(6003,"没有合适的约会地点"),
     ;
+    //商品不存在或已下架
+    ;
+
+
 
     private Integer code;
 

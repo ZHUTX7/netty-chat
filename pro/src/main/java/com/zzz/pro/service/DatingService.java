@@ -1,16 +1,19 @@
 package com.zzz.pro.service;
 
-import com.zzz.pro.enums.IOSLocKeyEnum;
-import com.zzz.pro.enums.RedisKeyEnum;
-import com.zzz.pro.enums.RelEnum;
+import com.zzz.pro.enums.*;
+import com.zzz.pro.exception.ApiException;
 import com.zzz.pro.mapper.*;
+import com.zzz.pro.netty.UserChannelMap;
+import  com.zzz.pro.netty.enity.ChatMsg;
 import com.zzz.pro.pojo.dto.DatingEvaluate;
 import com.zzz.pro.controller.form.DatingScoreForm;
 import com.zzz.pro.controller.vo.DatingStatusVO;
 import com.zzz.pro.controller.vo.PushMsgVO;
-import com.zzz.pro.utils.CRCUtil;
-import com.zzz.pro.utils.PushUtils;
-import com.zzz.pro.utils.RedisStringUtil;
+import com.zzz.pro.pojo.dto.UserPropsBags;
+import com.zzz.pro.task.Msg2Kafka;
+import com.zzz.pro.utils.*;
+import io.netty.channel.Channel;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -49,7 +52,8 @@ public class DatingService {
     DatingEvaluateMapper datingEvaluateMapper;
     @Resource
     PushUtils pushUtils;
-
+    @Resource
+    private UserPropsBagsMapper userPropsBagsMapper;
 
     public void acceptDating(String userId, String targetId, Integer status) {
 
@@ -165,5 +169,62 @@ public class DatingService {
     //1.2 约会过期
     //2 - 约会中
     //3 - 约会未开始
+    @Transactional
+    public void datingSkip(String userId, String targetId) {
+        //1.判断sku
 
+
+        friendsService.makeFriendsRel(userId, targetId);
+        ChatMsg chatMsg = new ChatMsg();
+        chatMsg.setMsg("< 提示：由于附近没有合适的见面地点，展维赠送您一次[跳过见面]服务 🎉 >");
+        chatMsg.setMsgId(chatMsg.getMsgId()+"1");
+        chatMsg.setMsgType(MsgTypeEnum.MESSAGE_ALERT.getCode());
+        chatMsg.setReceiverId(userId);
+        chatMsg.setSenderId(targetId);
+        Channel receiveChannel = UserChannelMap.getInstance().get(targetId);
+        int sign = 0;
+        if(receiveChannel != null){
+            receiveChannel.writeAndFlush(new TextWebSocketFrame(JsonUtils.objectToJson(chatMsg)));
+            sign =1;
+        }
+        //信息入库
+        chatMsg.setReceiverId(targetId);
+        chatMsg.setSenderId(userId);
+        com.zzz.pro.pojo.dto.ChatMsg dto =  BeanCopy.copy(chatMsg);
+        dto.setSignFlag(sign);
+        Msg2Kafka msg2Kafka  = (Msg2Kafka) SpringUtil.getBean("msg2Kafka");
+        msg2Kafka.asyncSend(dto);
+    }
+
+    @Transactional
+    public void datingSkipBySKU(String userId, String targetId) {
+        //1.判断sku
+
+        UserPropsBags consumerSKU =   userPropsBagsMapper.selectOneSKU(userId,"SKIP_DATE");
+        if(ObjectUtils.isEmpty(consumerSKU) || consumerSKU.getProductCount() <= 0){
+            throw new ApiException(ResultEnum.PROPS_NOT_ENOUGH.getCode(), "您没有该道具");
+        }
+        friendsService.makeFriendsRel(userId, targetId);
+        consumerSKU.setProductCount(consumerSKU.getProductCount() - 1);
+        userPropsBagsMapper.updateByPrimaryKeySelective(consumerSKU);
+        ChatMsg chatMsg = new ChatMsg();
+        chatMsg.setMsg("< 提示：对方刚刚使用跳过见面道具，您直接与对方成为好友～ >");
+        chatMsg.setMsgId(chatMsg.getMsgId()+"1");
+        chatMsg.setMsgType(MsgTypeEnum.MESSAGE_ALERT.getCode());
+        chatMsg.setReceiverId(userId);
+        chatMsg.setSenderId(targetId);
+        Channel receiveChannel = UserChannelMap.getInstance().get(targetId);
+        int sign = 0;
+        if(receiveChannel != null){
+            receiveChannel.writeAndFlush(new TextWebSocketFrame(JsonUtils.objectToJson(chatMsg)));
+            sign =1;
+        }
+        //信息入库
+        chatMsg.setReceiverId(targetId);
+        chatMsg.setSenderId(userId);
+        com.zzz.pro.pojo.dto.ChatMsg dto =  BeanCopy.copy(chatMsg);
+        dto.setSignFlag(sign);
+        Msg2Kafka msg2Kafka  = (Msg2Kafka) SpringUtil.getBean("msg2Kafka");
+        msg2Kafka.asyncSend(dto);
+    }
 }

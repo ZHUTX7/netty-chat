@@ -1,57 +1,34 @@
 package com.zzz.pro.pojo.dto;
 
-import javax.persistence.Column;
-import javax.persistence.Table;
+import lombok.Data;
 
+import javax.persistence.*;
+
+@Data
 @Table(name = "ameeno_sku_product")
 public class AmeenoSkuProduct {
+    @Id
+    @GeneratedValue(generator="UUID")
     private Integer id;
 
     @Column(name = "sku_id")
-    private Integer skuId;
+    private String skuId;
 
     @Column(name = "product_id")
-    private Integer productId;
+    private String productId;
+
+    @Column(name = "product_num")
+    private Integer productNum;
 
     /**
-     * @return id
+     * 是否有时间限制：>1 有 -1 无
      */
-    public Integer getId() {
-        return id;
-    }
+    @Column(name = "time_limit")
+    private Integer timeLimit;
 
     /**
-     * @param id
+     * 时间单位
      */
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    /**
-     * @return sku_id
-     */
-    public Integer getSkuId() {
-        return skuId;
-    }
-
-    /**
-     * @param skuId
-     */
-    public void setSkuId(Integer skuId) {
-        this.skuId = skuId;
-    }
-
-    /**
-     * @return product_id
-     */
-    public Integer getProductId() {
-        return productId;
-    }
-
-    /**
-     * @param productId
-     */
-    public void setProductId(Integer productId) {
-        this.productId = productId;
-    }
+    @Column(name = "time_unit")
+    private String timeUnit;
 }

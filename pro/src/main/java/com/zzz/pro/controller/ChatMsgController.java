@@ -23,7 +23,7 @@ public class ChatMsgController {
     private PushUtils pushUtils;
     //获取未签收消息
     @GetMapping("/getUnSignMsg")
-    public SysJSONResult<List<ChatMsgVO>> getUnSignMsg(@RequestHeader("refreshToken") String token){
+    public SysJSONResult<Object> getUnSignMsg(@RequestHeader("refreshToken") String token){
         String userId =  JWTUtils.getClaim(token,"userId");
         Map<String,Object> map  = new HashMap<>();
         List<ChatMsgVO> list = chatMsgService.getUnSignMsg(userId);

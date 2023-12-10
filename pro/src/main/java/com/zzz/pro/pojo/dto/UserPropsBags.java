@@ -16,7 +16,7 @@ public class UserPropsBags {
     private String userId;
 
     @Column(name = "product_id")
-    private Integer productId;
+    private String productId;
 
     @Column(name = "product_count")
     private Integer productCount;

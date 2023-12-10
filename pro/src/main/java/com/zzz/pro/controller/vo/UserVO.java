@@ -15,6 +15,7 @@ public class UserVO {
     private Integer birthDate;
     private String userSex;
     private String userHometown;
+    private String userRole;
     private int realAuth;
 
 }

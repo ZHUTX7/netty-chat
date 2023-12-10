@@ -4,8 +4,10 @@ import com.alibaba.fastjson.JSONObject;
 import com.zzz.pro.enums.RedisKeyEnum;
 import com.zzz.pro.mapper.UserPersonalInfoMapper;
 import com.zzz.pro.mapper.UserPhotoMapper;
+import com.zzz.pro.mapper.UserRoleMapper;
 import com.zzz.pro.pojo.dto.UserPersonalInfo;
 import com.zzz.pro.controller.vo.UserVO;
+import com.zzz.pro.pojo.dto.UserRole;
 import com.zzz.pro.utils.RedisStringUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -20,6 +22,8 @@ public class UserVOCache {
     private UserPersonalInfoMapper personalInfoMapper;
     @Resource
     private UserPhotoMapper userPhotoMapper;
+    @Resource
+    private UserRoleMapper userRoleMapper;
     public UserVO getUserVO(String userId) {
         if(StringUtils.isEmpty(userId)){
             return null;
@@ -39,6 +43,7 @@ public class UserVOCache {
             vo.setUserSex(personalInfo.getUserSex());
             vo.setUserHometown(personalInfo.getUserHometown());
             vo.setBirthDate(personalInfo.getUserBirthdate());
+            vo.setUserRole( userRoleMapper.selectRoleTypeByUserId(userId));
             String facePhoto =  userPhotoMapper.selectFaceImage(userId);
             facePhoto = facePhoto ==null ? "":facePhoto;
             vo.setUserImage(facePhoto);

@@ -2,19 +2,21 @@ package com.zzz.pro.enums;
 
 /**
  * @Author zhutianxiang
- * @Description 
- * @Date 2023/10/17 17:19
+ * @Description Product Type Enum
+ * @Date 2023/11/6 17:09
  * @Version 1.0
  */
-public enum ImageDataTypeEnum implements CodeEnum {
-    IMAGE_Base64(1,"base64"),
-    IMAGE_URL(2,"url"),
+public enum ProductTypeEnum implements CodeEnum<Integer> {
+    COUNT(1,"次数使用"),
+    TIME (2,"生效时间"),
+    VIP (3,"会员")
     ;
+
     private Integer code;
 
     private String title;
 
-    ImageDataTypeEnum(Integer code, String title) {
+    ProductTypeEnum(Integer code, String title) {
         this.code = code;
         this.title = title;
     }

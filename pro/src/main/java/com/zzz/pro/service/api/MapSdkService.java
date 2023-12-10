@@ -1,7 +1,9 @@
 package com.zzz.pro.service.api;
 
+import com.zzz.pro.enums.ResultEnum;
 import com.zzz.pro.pojo.bo.PoiVO;
 import com.zzz.pro.controller.vo.POI;
+import com.zzz.pro.service.DatingService;
 import com.zzz.pro.utils.HttpClientUtils;
 import com.zzz.pro.utils.JsonUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +32,12 @@ public class MapSdkService {
     private RestTemplate restTemplate;
     @Resource
     private HttpClientUtils httpClientUtils;
+    @Resource
+    private DatingService datingService;
 
+    // 1. 附近有营业中且距离合适的地点
+    // 2. 附近距离不合适
+    // 3. 距离合适未营业
     //获取周边服务
     public POI queryNearbyService(double lat1, double lng1,Integer distance){
         if(distance==null || distance>3 || distance<1){
@@ -39,9 +46,6 @@ public class MapSdkService {
         else {
             distance = distance*1000;
         }
-        //050000 餐饮服务 060200 便利店 080304 酒吧
-        //show_fields
-        // https://restapi.amap.com/v5/place/around?parameters
         String url = "https://restapi.amap.com/v5/place/around?output=json&location="
                 +lat1+","+lng1+"&key=" +key
                 +"&radius="+distance
@@ -49,13 +53,13 @@ public class MapSdkService {
                 +"&page_size=25"
                 +"&city_limit=true"
                 +"&show_fields=business,navi,photos"
-                +"&types=050300|050500|050600|050700|050800|050900|060100|060200|140100|140200|140400|140500";
+                +"&types="+getServiceCode();
        String json =   httpClientUtils.getForObject(url,null,String.class);
        PoiVO poiVO =  JsonUtils.jsonToPojo(json, PoiVO.class);
        if(ObjectUtils.isEmpty(poiVO) || poiVO.getPois().length== 0 ){
            POI poi = new POI();
-           poi.setPoiStatusCode(500);
-           poi.setPoiStatusMsg("附近没有可以见面的地点");
+           poi.setPoiStatusCode(ResultEnum.DATING_POINT_NOT_SUIT.getCode());
+           poi.setPoiStatusMsg(ResultEnum.DATING_POINT_NOT_SUIT.getTitle());
            return poi;
        }
        POI[] poi =  poiVO.getPois();
@@ -85,11 +89,16 @@ public class MapSdkService {
             // 解析开始时间和结束时间
             Date startTime = sdf.parse(parts[0]);
             Date endTime = sdf.parse(parts[1]);
-
             // 比较当前时间是否在时间段内
             return currentTime.after(startTime) && currentTime.before(endTime);
         } catch (Exception e) {
             return false;
         }
     }
+
+    public String getServiceCode(){
+        String code = "050301|050302|050303|050308|050309|050310|050311|050500|050501|050502|050503|050504|060100|060201|060202|060400|080304|080601|110100|061001";
+        return code;
+    }
+
 }

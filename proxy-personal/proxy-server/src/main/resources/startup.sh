@@ -1,1 +1,0 @@
-java -jar ../lib/proxy-server.jar

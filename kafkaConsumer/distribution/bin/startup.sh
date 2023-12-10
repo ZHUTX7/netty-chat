@@ -1,1 +1,1 @@
-java -jar message-consumer-1.jar
+java -jar ../lib/message-consumer.jar

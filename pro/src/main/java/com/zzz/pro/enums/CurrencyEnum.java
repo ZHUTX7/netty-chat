@@ -3,24 +3,24 @@ package com.zzz.pro.enums;
 /**
  * @Author zhutianxiang
  * @Description 
- * @Date 2023/10/17 17:19
+ * @Date 2023/11/6 17:05
  * @Version 1.0
  */
-public enum ImageDataTypeEnum implements CodeEnum {
-    IMAGE_Base64(1,"base64"),
-    IMAGE_URL(2,"url"),
-    ;
-    private Integer code;
+public enum CurrencyEnum implements CodeEnum<String> {
+    CNY("CNY","人民币"),
+    USD("USD","美元"),
+    GBP("GBP","英镑"),;
+    private String code;
 
     private String title;
 
-    ImageDataTypeEnum(Integer code, String title) {
+    CurrencyEnum(String code, String title) {
         this.code = code;
         this.title = title;
     }
 
     @Override
-    public Integer getCode() {
+    public String getCode() {
         return code;
     }
 

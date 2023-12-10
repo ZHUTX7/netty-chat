@@ -16,9 +16,9 @@ public class NearPeopleVO {
     //附近的人列表 - 10个
     private List<NearUserVO> userList;
     //附近的人总数
-    private int count;
+    private int sum;
     public NearPeopleVO(){
-        this.count = 0 ;
+        this.sum = 0 ;
         this.userList = new ArrayList<>();
     }
 }

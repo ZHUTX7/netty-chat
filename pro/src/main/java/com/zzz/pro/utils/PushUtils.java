@@ -14,6 +14,7 @@ import com.zzz.pro.enums.RedisKeyEnum;
 import com.zzz.pro.controller.vo.PushMsgVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -96,38 +97,22 @@ public class PushUtils {
         }
         return response;
     }
-    //TODO 加锁
-    public void clearIosBadge(String deviceToken,int delBadge){
-        if(delBadge<=0){
-            return;
+
+    public void clearIosBadge(String deviceId){
+        if(StringUtils.isEmpty(deviceId)){
+            return ;
         }
-        Integer currentBadge = Integer.parseInt(redisStringUtil.get(RedisKeyEnum.USER_UNREAD_MSG_COUNT.getCode()+deviceToken)) ;
-        if(null == currentBadge ){
-            currentBadge = 0;
-        }
-        int badge = currentBadge - delBadge; ;
-        if(badge <= 0){
-            badge = 0;
-        }
-        redisStringUtil.set(RedisKeyEnum.USER_UNREAD_MSG_COUNT.getCode()+deviceToken,badge+"") ;
-        // 有效时间
+        redisStringUtil.del(RedisKeyEnum.USER_UNREAD_MSG_COUNT.getCode()+deviceId) ;
         Date invalidationTime = new Date(System.currentTimeMillis() + 60 * 1000L);
         Instant instant = invalidationTime.toInstant();
         // 构造一个APNs的推送消息实体
         PayloadBuilder payloadBuilder = PayloadBuilder.newPayload();
-        payloadBuilder.badge(badge);
+        payloadBuilder.badge(0);
+        //-------- key -------------
         String payload = payloadBuilder.build();
-        SimpleApnsPushNotification msg = new SimpleApnsPushNotification(deviceToken, topic, payload, instant, DeliveryPriority.IMMEDIATE, PushType.ALERT);
+        SimpleApnsPushNotification msg = new SimpleApnsPushNotification(deviceId, topic, payload, instant, DeliveryPriority.IMMEDIATE, PushType.ALERT);
         // 开始推送
-        PushNotificationFuture<SimpleApnsPushNotification, PushNotificationResponse<SimpleApnsPushNotification>> future = apnsClient.sendNotification(msg);
-        PushNotificationResponse<SimpleApnsPushNotification> response = null;
-        try {
-            response = future.get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+        apnsClient.sendNotification(msg);
 
     }
 

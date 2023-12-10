@@ -45,7 +45,9 @@ public class LoginInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler){
         String token =  request.getHeader("token");
         String refreshToken = request.getHeader("refreshToken");
-
+        //获取IP地址
+        String ip = request.getRemoteAddr();
+        System.out.println("client ip is :"+ip);
         if(StringUtils.isEmpty(token) || StringUtils.isEmpty(refreshToken)){
             throw new ApiException(ResultEnum.TOKEN_ERROR.getCode(),ResultEnum.TOKEN_ERROR.getTitle());
         }

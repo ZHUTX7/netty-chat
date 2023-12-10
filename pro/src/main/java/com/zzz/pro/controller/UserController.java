@@ -128,11 +128,14 @@ public class UserController {
         if (userId == null || userId.equals("")){
             return ResultVOUtil.error(ResultEnum.PARAM_ERROR.getCode(),"用户id不能为空！");
         }
-        return  ResultVOUtil.success(userService.queryUserProfile(userId));
+        return  ResultVOUtil.success(userService.queryUserVO(userId));
     }
     //发送短信
     @GetMapping("/sendSms")
-    public SysJSONResult sendSms(@Param("phone") String phone,@Param("regionCode") String regionCode){
+    public SysJSONResult sendSms(@Param("phone") String phone,@Param("regionCode") String regionCode, HttpServletRequest request){
+        //获取客户端Ip
+        String ip = request.getRemoteAddr();
+        System.out.println("ip is "+ip);
         if (phone == null || phone.equals("")){
             return ResultVOUtil.error(ResultEnum.PARAM_ERROR.getCode(),"手机号不能为空！");
         }
@@ -162,9 +165,19 @@ public class UserController {
 
     }
 
-    //TEST 清除用户白名单
+    //TEST 清除用户不喜欢列表
     @GetMapping("/clear/black")
     public void clearBlackList(@RequestParam("userId") String userId){
 
+    }
+
+    //修改用户手机号
+    @PostMapping("/update/phone")
+    public SysJSONResult updatePhone(@RequestBody @Valid UpdatePhoneForm form, BindingResult result){
+        if(result.hasErrors()){
+            return ResultVOUtil.error(ResultEnum.PARAM_ERROR.getCode(),result.getFieldError().getDefaultMessage());
+        }
+        userService.updatePhone(form);
+        return  ResultVOUtil.success();
     }
 }

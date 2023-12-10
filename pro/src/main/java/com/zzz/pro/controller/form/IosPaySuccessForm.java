@@ -16,6 +16,4 @@ public class IosPaySuccessForm {
     private String receipt;
     @NotEmpty(message = "orderId can not be empty" )
     private String orderId;
-
-    private String productId;
 }

@@ -3,17 +3,19 @@ package com.zzz.pro.service;
 
 import com.zzz.pro.controller.form.BuyForm;
 import com.zzz.pro.controller.form.ConsumeSKUForm;
-import com.zzz.pro.controller.vo.SkuVO;
-import com.zzz.pro.enums.ResultEnum;
+import com.zzz.pro.controller.vo.UserSkuVO;
+import com.zzz.pro.enums.*;
 import com.zzz.pro.exception.ApiException;
-import com.zzz.pro.mapper.AmeenoProductMapper;
-import com.zzz.pro.mapper.UserPropsBagsMapper;
-import com.zzz.pro.mapper.UserRoleMapper;
-import com.zzz.pro.pojo.dto.AmeenoOrders;
-import com.zzz.pro.pojo.dto.AmeenoProduct;
-import com.zzz.pro.pojo.dto.UserPropsBags;
-import com.zzz.pro.pojo.dto.UserRole;
+import com.zzz.pro.mapper.*;
+import com.zzz.pro.pojo.bo.SkuProductBO;
+import com.zzz.pro.pojo.dto.*;
+import com.zzz.pro.utils.CRCUtil;
+import com.zzz.pro.utils.IDWorker;
+import com.zzz.pro.utils.RedisStringUtil;
+import com.zzz.pro.utils.SkuTimeUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
@@ -22,7 +24,7 @@ import java.util.*;
 
 /**
  * @Author zhutianxiang
- * @Description TODO
+ * @Description 
  * @Date 2023/10/26 19:26
  * @Version 1.0
  */
@@ -33,54 +35,75 @@ public class SKUService {
     @Resource
     private AmeenoProductMapper productMapper;
     @Resource
+    private AmeenoSkuMapper skuMapper;
+    @Resource
+    private AmeenoSkuProductMapper skuProductMapper;
+    @Resource
     private UserPropsBagsMapper userPropsBagsMapper;
     @Resource
     private UserRoleMapper userRoleMapper;
+    @Resource
+    RedisStringUtil redisStringUtil;
+    @Resource
+    UserBaseInfoMapper userBaseInfoMapper;
 
+    public  List<AmeenoSku>  queryAllSku(){
+       List<AmeenoSku> list =  skuMapper.selectBySkuSalesStatus(SkuStatsEnum.SALE.getCode());
+       return list;
+    }
 
 
     // "推送产品/服务"
+    @Transactional(propagation = Propagation.REQUIRED)
     public void pushSKU(String orderId) {
        AmeenoOrders oder =  oderService.queryOrders(orderId);
 
-       String productId = oder.getBuyProductId();
-       AmeenoProduct product =  productMapper.selectByPrimaryKey(productId);
-       int nums = oder.getBuyNums() ;
-       String userId = oder.getUserId();
-       Integer productType = product.getProductType();
-       //1 - "SUBSCRIBE" - 订阅
-       if(productType == 1) {
-           pushSubscribeSKU(product, nums, userId);
+       String skuId = oder.getBuySkuId();
+       //1.查询SKU商品条目
+       List<SkuProductBO> list =  skuProductMapper.selectBySkuId(skuId);
+       if(CollectionUtils.isEmpty(list)){
+           throw new ApiException(ResultEnum.PARAM_ERROR.getCode(), "SKU商品条目为空");
        }
-       //2 - "PURCHASE" - 单次购买
-       else if(productType == 2) {
-              pushPurchaseSKU(product, nums, userId,product.getProductAvailableDay() * 24 * 60 * 60 * 1000L);
-       }
-       else if(productType == 3) {
-           pushVipSKU(product, nums, userId);
-       }
-       else {
-           throw new ApiException(ResultEnum.PARAM_ERROR.getCode(), "产品类型错误");
-       }
+       //2.查询SKU
+       list.stream().forEach(e->{
+           String userId = oder.getUserId();
+           Integer productType = e.getProductType();
+           //1 - "SUBSCRIBE" - 订阅
+           if(productType == ProductTypeEnum.TIME.getCode()) {
+               pushSubscribeSKU(e, userId);
+           }
+           //2 - "PURCHASE" - 次数类型
+           else if(productType == ProductTypeEnum.COUNT.getCode()) {
+               pushCountSKU(e, userId);
+           }
+           else if(productType == ProductTypeEnum.VIP.getCode()) {
+               pushVipSKU(e, userId);
+           }
+           else {
+               throw new ApiException(ResultEnum.PARAM_ERROR.getCode(), "产品类型错误");
+           }
+       });
+
     }
 
 
 //    | 1- "SUBSCRIBE" - 订阅 2- "PURCHASE" - 单次购买 |
 
-    public void pushSubscribeSKU(AmeenoProduct product,int nums,String userId) {
-        int sumSubDays =  product.getProductAvailableDay() * nums;
+    public void pushSubscribeSKU(SkuProductBO bo,String userId) {
+        int sumSubDays = SkuTimeUtils.getDay(bo.getTimeLimit(),bo.getTimeUnit());
         //1. 查询用户是否已经有订阅
-        UserPropsBags userPropsBags =  userPropsBagsMapper.selectSubscribeSKU(userId,product.getProductId());
+        UserPropsBags userPropsBags =  userPropsBagsMapper.selectSubscribeSKU(userId,bo.getProductId());
         // 2. 如果没有订阅，新增订阅
         Date now =new Date();
         if(userPropsBags == null){
             userPropsBags = new UserPropsBags();
             userPropsBags.setUserId(userId);
-            userPropsBags.setProductId(product.getProductId());
-            userPropsBags.setProductCount(nums);
+            userPropsBags.setProductId(bo.getProductId());
+            userPropsBags.setProductCount(1);
             //增加天数
             userPropsBags.setExpireTime(new Date(now.getTime() + sumSubDays * 24 * 60 * 60 * 1000));
             userPropsBags.setGetTime(now);
+            userPropsBags.setTimeLimitFlag(bo.getTimeLimit());
             userPropsBagsMapper.insert(userPropsBags);
         }
         // 3. 如果有订阅，更新订阅时间
@@ -93,23 +116,37 @@ public class SKUService {
             //增加天数
             userPropsBags.setExpireTime(new Date(date.getTime() + sumSubDays * 24 * 60 * 60 * 1000));
             userPropsBags.setProductCount(1);
+            userPropsBags.setTimeLimitFlag(bo.getTimeLimit());
             userPropsBagsMapper.updateByPrimaryKeySelective(userPropsBags);
         }
     }
 
-    public void pushVipSKU(AmeenoProduct product,int nums,String userId) {
-        int sumSubDays =  product.getProductAvailableDay() * nums;
+    public void pushVipSKU(SkuProductBO bo,String userId) {
+        int sumSubDays = SkuTimeUtils.getDay(bo.getTimeLimit(),bo.getTimeUnit());
+
         //1. 查询用户是否已经有订阅 svip -> ssvip 前端计算付费
         UserRole userRole  = userRoleMapper.selectByUserId(userId);
 
         // 2. 如果没有订阅，新增订阅
         Date now =new Date();
-        if(userRole == null){
+        if( userRole==null  ||  UserRoleEnum.NORMAL_ROLE.getCode().equals(userRole.getRoleType())  ){
             userRole = new UserRole();
+            userRole.setId("role-"+userId);
             userRole.setUserId(userId);
-            userRole.setRoleType(product.getProductType());
+            userRole.setRoleType(bo.getProductId());
             userRole.setExpireTime(new Date(now.getTime() + sumSubDays * 24 * 60 * 60 * 1000));
             userRoleMapper.insert(userRole);
+        }
+        else if(UserRoleEnum.VIP_ROLE.getCode().equals(userRole.getRoleType())  ) {
+            Date date =  userRole.getExpireTime();
+            //如果过期时间小于当前时间，从当前时间开始计算
+            if(date.getTime() < now.getTime()) {
+                date = now;
+            }
+            //增加天数
+            userRole.setRoleType(bo.getProductId());
+            userRole.setExpireTime(new Date(date.getTime() + sumSubDays * 24 * 60 * 60 * 1000));
+            userRoleMapper.updateByPrimaryKeySelective(userRole);
         }
         // 3. 如果有订阅，更新订阅时间
         else {
@@ -119,28 +156,31 @@ public class SKUService {
                 date = now;
             }
             //增加天数
-            userRole.setRoleType(product.getProductType());
+            userRole.setRoleType(bo.getProductId());
             userRole.setExpireTime(new Date(date.getTime() + sumSubDays * 24 * 60 * 60 * 1000));
             userRoleMapper.updateByPrimaryKeySelective(userRole);
         }
+        userBaseInfoMapper.updateUserRole(userId,bo.getProductId());
+        redisStringUtil.hdel(RedisKeyEnum.ALL_USER_VO.getCode() ,userId);
     }
-    public void pushPurchaseSKU(AmeenoProduct product,int nums,String userId,Long expireTime) {
+    public void pushCountSKU(SkuProductBO bo,String userId) {
         Date now = new Date();
-        UserPropsBags sku = new UserPropsBags();
-        sku.setUserId(userId);
-        sku.setProductId(product.getProductId());
-        sku.setProductCount(nums);
-        sku.setGetTime(now);
+        UserPropsBags props = new UserPropsBags();
+        props.setUserId(userId);
+        props.setProductId(bo.getProductId());
+        props.setProductCount(bo.getNums());
+        props.setGetTime(now);
         //如果该SKU 没有有效期
-        if(expireTime == null){
+        if(bo.getTimeLimit() <= 0){
             //nums +1
-            sku.setExpireTime(null);
-            sku.setTimeLimitFlag(0);
-            userPropsBagsMapper.insertOrUpdateUserPropsBags(sku);
+            props.setExpireTime(null);
+            props.setTimeLimitFlag(0);
+            userPropsBagsMapper.insertOrUpdateUserPropsBags(props);
         }
         //如果该SKU 有有效期
-        sku.setExpireTime(new Date(now.getTime() + expireTime));
-        userPropsBagsMapper.insert(sku);
+        Long expireTime =  bo.getTimeLimit() * 24 * 60 * 60 * 1000L;
+        props.setExpireTime(new Date(now.getTime() + expireTime));
+        userPropsBagsMapper.insert(props);
     }
 
 
@@ -167,21 +207,12 @@ public class SKUService {
     }
 
     //查找我的道具
-    public List<SkuVO> queryMyProps(String userId) {
-
-        List<UserPropsBags> userPropsBags =  userPropsBagsMapper.selectMyAllSKU(userId);
+    public List<UserSkuVO> queryMyProps(String userId) {
+        List<UserSkuVO> userPropsBags =  userPropsBagsMapper.selectMyAllSKU(userId);
         if(CollectionUtils.isEmpty(userPropsBags)){
             return Collections.emptyList();
         }
-        List<SkuVO> voList = new ArrayList<>();
-        userPropsBags.stream().forEach(e->{
-            SkuVO vo = new SkuVO();
-            vo.setProductId(e.getProductId());
-            vo.setProductCount(e.getProductCount());
-            vo.setExpireTime(e.getExpireTime().getTime());
-            voList.add(vo);
-        });
-        return voList;
+          return userPropsBags;
     }
 
 }

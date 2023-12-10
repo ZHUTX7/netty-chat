@@ -15,11 +15,12 @@ import javax.annotation.Resource;
 
 /**
  * @Author zhutianxiang
- * @Description TODO
+ * @Description 
  * @Date 2023/10/27 18:31
  * @Version 1.0
  */
-@RestController("/sku")
+@RestController
+@RequestMapping("/sku")
 public class SKUController {
     @Resource
     private OderService oderService;
@@ -28,31 +29,35 @@ public class SKUController {
     @Resource
     private AppleService appleService;
 
+    @PostMapping("/query/all")
+    public SysJSONResult queryAll(){
+        return  ResultVOUtil.success(skuService.queryAllSku());
+    }
+
     //查找我的道具
-    @PostMapping("/query")
-    public SysJSONResult queryMyProps(@RequestHeader("refreshToken") String token){
+    @GetMapping("/query")
+    public SysJSONResult<Object> queryMyProps(@RequestHeader("refreshToken") String token){
         String userId = JWTUtils.getClaim(token,"userId");
         return  ResultVOUtil.success(skuService.queryMyProps(userId));
     }
 
     //下单
     @PostMapping("/init/order")
-    public SysJSONResult initOrder(@RequestHeader("refreshToken") String token, @RequestBody BuyForm buyForm){
+    public SysJSONResult<Object> initOrder(@RequestHeader("refreshToken") String token, @RequestBody BuyForm buyForm){
         buyForm.setUserId(JWTUtils.getClaim(token,"userId"));
-        String id = oderService.initOrder(buyForm);
-        return  ResultVOUtil.success("购买成功！",null);
+        return  ResultVOUtil.success( oderService.initOrder(buyForm));
     }
 
     //支付成功回调接口
-    @GetMapping("/pay/callback")
-    public SysJSONResult payCallback(@RequestHeader("refreshToken") String token, @RequestBody IosPaySuccessForm form){
+    @PostMapping("/pay/callback")
+    public SysJSONResult<Object>  payCallback(@RequestHeader("refreshToken") String token, @RequestBody IosPaySuccessForm form){
         oderService.updateOrder(form);
         return  ResultVOUtil.success("购买成功！",null);
     }
 
     //消耗道具
     @PostMapping("/init/consume")
-    public SysJSONResult skuConsume(@RequestHeader("refreshToken") String token, @RequestBody ConsumeSKUForm form){
+    public SysJSONResult<Object>  skuConsume(@RequestHeader("refreshToken") String token, @RequestBody ConsumeSKUForm form){
         form.setUserId(JWTUtils.getClaim(token,"userId"));
         skuService.consumeProduct(form);
         return  ResultVOUtil.success();

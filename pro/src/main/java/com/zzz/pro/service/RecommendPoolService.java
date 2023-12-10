@@ -34,23 +34,21 @@ public class RecommendPoolService {
         int pageSize = 30;
         int pageNum = count;
         int start = pageNum*pageSize;
-        if(start >= list.size()){
-            return new NearPeopleVO();
-        }
+
+
         //2. UserGps to NearPeopleVO
         List<NearUserVO> result = new ArrayList<>();
         NearPeopleVO nearPeopleVO = new NearPeopleVO();
-        if (CollectionUtils.isEmpty(list)) {
-            nearPeopleVO.setUserList(result);
-            return nearPeopleVO;
+        if (CollectionUtils.isEmpty(list) || start >= list.size()) {
+            return new NearPeopleVO();
         }
-
+        nearPeopleVO.setSum(list.size());
         int curSize = 0;
         for(int i =start ;curSize<pageNum || i< list.size() ;i++){
             String idAndDistance = list.get(i);
             String[] str = idAndDistance.split("-");
 
-            System.out.println("匹配到的人"+str[0]);
+            log.info("用户{}匹配到用户{}",userId,str[0]);
             //黑名单筛选
             if(bloomFilterService.mightContain(userId,str[0])) {
                 continue;
@@ -58,10 +56,10 @@ public class RecommendPoolService {
             //滑过筛选
             Integer isSelected = (Integer)redisUtil.get(RedisKeyEnum.USER_SELECTED_POOL.getCode()+userId+str[0]);
             if(isSelected !=null && isSelected == 1){
+
                 continue;
             }
 
-            System.out.printf("添加对象{}  \n",str[0]);
             NearUserVO vo = new NearUserVO();
             UserVO userVO = userVOCache.getUserVO(str[0]);
             if(userVO == null){
@@ -82,5 +80,9 @@ public class RecommendPoolService {
     }
     public void addSelectPool(String userId,String targetId){
         redisUtil.set(RedisKeyEnum.USER_SELECTED_POOL.getCode()+userId+targetId,1,6*60);
+    }
+
+    public void removeBlackPool(String userId){
+        bloomFilterService.remove(userId);
     }
 }

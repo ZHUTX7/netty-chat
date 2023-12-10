@@ -2,6 +2,7 @@ package com.zzz.pro.service;
 
 import com.zzz.pro.enums.RedisKeyEnum;
 import com.zzz.pro.utils.RedisStringUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
@@ -13,6 +14,7 @@ import javax.annotation.Resource;
  */
 @Service
 @Configuration
+@Slf4j
 public class BloomFilterService {
 
     private static final int SIZE = 1000000; // 布隆过滤器的大小
@@ -36,6 +38,8 @@ public class BloomFilterService {
         int[] hashes = getHashes(value);
         for (int hash : hashes) {
             if (!redisStringUtil.getRedisTemplate().opsForValue().getBit(key, hash)) {
+                //TODO log
+                log.info("用户{}黑名单中存在用户{}",userId,value);
                 return false;
             }
         }
@@ -58,6 +62,10 @@ public class BloomFilterService {
         return Math.abs(hash); // 取绝对值确保结果是非负整数
     }
 
+    public void remove(String userId){
+        String  key = RedisKeyEnum.USER_BLACK_POOL.getCode()+userId;
+        redisStringUtil.getRedisTemplate().delete(key);
+    }
 
 
 }

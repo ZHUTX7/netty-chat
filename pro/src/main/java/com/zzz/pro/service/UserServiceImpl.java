@@ -40,20 +40,31 @@ public class UserServiceImpl implements UserService {
     private UserBaseInfoMapper userBaseInfoMapper;
     @Resource
     private MapService mapService;
+    @Resource
+    private UserVOCache voCache;
+    @Resource
+    private RecommendPoolService recommendPoolService;
 
     private IDWorker idWorker = new IDWorker(1, 1, 1);
 
     @Override
     public LoginResultVO userLogin(LoginForm loginForm) {
+        String code = null;
         // 1. 验证验证码
-//        redisUtil.set(loginForm.getUserPhone(),loginForm.getVerifyCode(),60*5);
-        String code =  redisStringUtil.get(loginForm.getUserPhone());
-        if (StringUtils.isEmpty(code) || !code.equals(loginForm.getVerifyCode())) {
+        code =  redisStringUtil.get(loginForm.getUserPhone());
+
+        //--------上线前注释-------
+        //--测试账号
+        if(loginForm.getUserPhone().equals("00000000000")){
+            code = "000000";
+        }
+        //---------------
+
+        if ( StringUtils.isEmpty(code) || !code.equals(loginForm.getVerifyCode())) {
             throw new ApiException(ResultEnum.PARAM_ERROR.getCode(), "验证码错误");
         }
         LoginResultVO vo = new LoginResultVO();
 
-        //TODO 代码优化
         UserBaseInfo userBaseInfo = userBaseInfoMapper.selectByPhone(loginForm.getUserPhone());
 
         // 1. 验证用户是否存在
@@ -157,9 +168,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserPersonalInfo queryUserProfile(String userId) {
-        UserPersonalInfo u = userPersonalInfoMapper.selectByPrimaryKey(userId);
-        return u;
+    public UserVO queryUserVO(String userId) {
+        return voCache.getUserVO(userId);
     }
 
     @Override
@@ -224,13 +234,32 @@ public class UserServiceImpl implements UserService {
             Integer targetIndex = entry.getValue();
             userPhotoMapper.updatePhotoIndex(photoId, targetIndex);
         }
-
+        //删除用户userVO
+        redisStringUtil.hdel(RedisKeyEnum.ALL_USER_VO.getCode() , form.getUserId());
     }
 
     @Override
     public void userRealAuth(UserRealAuthForm form) {
         //修改用户real_auth信息
         userPersonalInfoMapper.updateUserAuth(form.getUserId(), 1);
+    }
+
+    @Override
+    public void updatePhone(UpdatePhoneForm form) {
+        String code = redisStringUtil.get(form.getNewPhone());
+        if(StringUtils.isEmpty(code) || !form.getCode().equals(code)){
+            throw new ApiException(ResultEnum.PARAM_ERROR.getCode(),"验证码错误");
+        }
+        if( userBaseInfoMapper.checkPhone(form.getNewPhone()) > 0){
+            throw new ApiException(ResultEnum.PHONE_IS_EXIST.getCode(),ResultEnum.PHONE_IS_EXIST.getTitle());
+        }
+        //修改用户手机号
+        userBaseInfoMapper.updateUserPhoneByUserId(form.getUserId(), form.getNewPhone());
+    }
+
+    @Override
+    public void deleteUserBlackList(String userId) {
+        recommendPoolService.removeBlackPool(userId);
     }
 
 }

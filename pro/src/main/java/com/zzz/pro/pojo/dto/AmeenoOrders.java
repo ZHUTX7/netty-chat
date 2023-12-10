@@ -51,8 +51,8 @@ public class AmeenoOrders {
     /**
      * 消费商品
      */
-    @Column(name = "buy_product_id")
-    private String buyProductId;
+    @Column(name = "buy_sku_id")
+    private String buySkuId;
 
     /**
      * 购买数量
