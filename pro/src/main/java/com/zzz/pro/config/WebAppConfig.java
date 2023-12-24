@@ -33,9 +33,11 @@ public class WebAppConfig extends WebMvcConfigurerAdapter {
                 .excludePathPatterns("/user/login")//对应的不拦截的请求
                 .excludePathPatterns("/user/register")
                 .excludePathPatterns("/user/sendSms")
+                .excludePathPatterns("/app/config/query")
                 .excludePathPatterns("/sku/pay/callback")
+                .excludePathPatterns("/sku/apple/listen")
                 .addPathPatterns("/**"); //拦截所有请求
-        // 2. api保护器
+//        // 2. api保护器
         registry.addInterceptor(accessLimitInterceptor)//添加拦截器
                 .addPathPatterns("/**"); //拦截所有请求
     }

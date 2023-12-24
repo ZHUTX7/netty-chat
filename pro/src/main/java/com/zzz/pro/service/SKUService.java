@@ -1,18 +1,20 @@
 package com.zzz.pro.service;
 
 
+import com.alibaba.fastjson.JSONObject;
 import com.zzz.pro.controller.form.BuyForm;
 import com.zzz.pro.controller.form.ConsumeSKUForm;
+import com.zzz.pro.controller.form.RefundIosForm;
 import com.zzz.pro.controller.vo.UserSkuVO;
 import com.zzz.pro.enums.*;
 import com.zzz.pro.exception.ApiException;
 import com.zzz.pro.mapper.*;
 import com.zzz.pro.pojo.bo.SkuProductBO;
 import com.zzz.pro.pojo.dto.*;
-import com.zzz.pro.utils.CRCUtil;
-import com.zzz.pro.utils.IDWorker;
-import com.zzz.pro.utils.RedisStringUtil;
-import com.zzz.pro.utils.SkuTimeUtils;
+import com.zzz.pro.utils.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +31,7 @@ import java.util.*;
  * @Version 1.0
  */
 @Service
+@Slf4j
 public class SKUService {
     @Resource
     private OderService oderService;
@@ -46,6 +49,8 @@ public class SKUService {
     RedisStringUtil redisStringUtil;
     @Resource
     UserBaseInfoMapper userBaseInfoMapper;
+    @Resource
+    JwsUtils jwsUtils;
 
     public  List<AmeenoSku>  queryAllSku(){
        List<AmeenoSku> list =  skuMapper.selectBySkuSalesStatus(SkuStatsEnum.SALE.getCode());
@@ -213,6 +218,50 @@ public class SKUService {
             return Collections.emptyList();
         }
           return userPropsBags;
+    }
+
+    //apple notification
+    public void notification( RefundIosForm form) {
+        // TODO 记录每次的苹果通知请求
+        String signedPayload= new String(Base64.getDecoder().decode(form.getSignedPayload().split("\\.")[0]));
+        //解析苹果请求的数据
+        JSONObject jsonObject=JSONObject.parseObject(signedPayload);
+        ;
+        Jws<Claims> result=jwsUtils.verifyJWT(jsonObject.getJSONArray("x5c").get(0).toString(),form.getSignedPayload());
+        log.info("------receive IosSysMsg -------");
+        log.info("msg is [{}]",result.toString());
+        log.info("------ finished  -------");
+//        String notificationType=result.getBody().get("notificationType").toString();
+//        Claims map=result.getBody();
+//        HashMap<String,Object> envmap=map.get("data",HashMap.class);
+//        String env=envmap.get("environment").toString();
+//
+//        String resulttran= new String(Base64.getDecoder().decode(envmap.get("signedTransactionInfo").toString().split("\\.")[0]));
+//        JSONObject jsonObjecttran=JSONObject.parseObject(resulttran);
+//
+//        Jws<Claims> result3=jwsUtils.verifyJWT(jsonObjecttran.getJSONArray("x5c").get(0).toString(),envmap.get("signedTransactionInfo").toString());
+//        System.out.println(result3.getBody().toString());
+////        HashMap<String,Object> orderMap=result3.getBody().("data",HashMap.class);
+//        log.info("Apple store notification type is {} ,and env is {}：",notificationType,env);
+//
+//        if(notificationType.equals("DID_RENEW")) {
+//            //比较原始订单
+//
+//            // VipOrder vipOrderinsert=new VipOrder();
+//            String transactionId = result3.getBody().get("transactionId").toString();
+//            String productId = result3.getBody().get("productId").toString();
+//            String originalTransactionId = result3.getBody().get("originalTransactionId").toString();
+//        }
+//        else if(notificationType.equals("REFUND")) {
+//
+//            String originalTransactionId= result3.getBody().get("originalTransactionId").toString();
+//            String productId = result3.getBody().get("productId").toString();
+//            //逻辑代码
+//        }
+//        else {
+//            log.info("notificationType未处理：" + notificationType);
+//        }
+
     }
 
 }

@@ -2,6 +2,7 @@ package com.zzz.pro.service;
 
 import com.zzz.pro.controller.form.BuyForm;
 import com.zzz.pro.controller.form.IosPaySuccessForm;
+import com.zzz.pro.controller.vo.OrderStatusVO;
 import com.zzz.pro.enums.OrderEnum;
 import com.zzz.pro.enums.ResultEnum;
 import com.zzz.pro.enums.SkuStatsEnum;
@@ -17,13 +18,17 @@ import com.zzz.pro.service.api.AppleService;
 import com.zzz.pro.utils.OrderIdGenerate;
 import com.zzz.pro.utils.ResultVOUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Author zhutianxiang
@@ -85,10 +90,10 @@ public class OderService {
     //支付成功  - 订单更新
     @Transactional
     public SysJSONResult updateOrder(IosPaySuccessForm form) {
-//        if(!appleService.verifyTransaction(form.getOrderId())){
-//            log.error("交易验证失败");
-//            return ResultVOUtil.error(ResultEnum.ORDER_UPDATE_FAILED.getCode(),ResultEnum.ORDER_UPDATE_FAILED.getTitle());
-//        }
+        if(!appleService.verifyTransaction(form.getOrderId())){
+            log.error("交易验证失败");
+            return ResultVOUtil.error(ResultEnum.ORDER_UPDATE_FAILED.getCode(),ResultEnum.ORDER_UPDATE_FAILED.getTitle());
+        }
 
 
         AmeenoOrders order =  ordersMapper.selectByPrimaryKey(form.getOrderId());
@@ -109,5 +114,30 @@ public class OderService {
 
     public AmeenoOrders queryOrders(String orderId) {
         return ordersMapper.selectByPrimaryKey(orderId);
+    }
+
+    public  List<OrderStatusVO> queryOrderStatus(String userId,String orderId){
+        List<AmeenoOrders> list = new ArrayList<>();
+        List<OrderStatusVO> voList = new ArrayList<>();
+        if(!StringUtils.isEmpty(userId)){
+            list =  ordersMapper.queryByUserId(userId);
+            list.stream().forEach(e->{
+                OrderStatusVO vo = new OrderStatusVO();
+                BeanUtils.copyProperties(e,vo);
+                voList.add(vo);
+            });
+        }
+        else if(!StringUtils.isEmpty(orderId)){
+            AmeenoOrders orders = ordersMapper.selectByPrimaryKey(orderId);
+            OrderStatusVO vo = new OrderStatusVO();
+            BeanUtils.copyProperties(orders,vo);
+            voList.add(vo);
+        }
+        else{
+            throw new ApiException(ResultEnum.ORDER_NOT_EXIST.getCode(),ResultEnum.ORDER_NOT_EXIST.getTitle());
+        }
+
+
+        return voList;
     }
 }

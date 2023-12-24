@@ -16,9 +16,9 @@ public class SmsService {
     private RedisStringUtil redisStringUtil;
 
     //发送短信 ,返回验证码
-    public String sendSms(String phoneNumber){
+    public String sendSms(String regionCode,String phoneNumber){
         String code =  MsmConstantUtils.generateValidateCode(6);
-        if(MsmConstantUtils.sendPhone(phoneNumber,code)) {
+        if(MsmConstantUtils.sendPhone(regionCode,phoneNumber,code)) {
             log.info("短信发送成功，手机号：{}，验证码：{}",phoneNumber,code);
             redisStringUtil.set(phoneNumber,code,120);
             return code;

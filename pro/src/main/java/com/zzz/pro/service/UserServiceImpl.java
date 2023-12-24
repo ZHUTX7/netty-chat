@@ -134,6 +134,7 @@ public class UserServiceImpl implements UserService {
     public SysJSONResult delUser(UserBaseInfo userBaseInfo) {
         int result = userBaseInfoMapper.delete(userBaseInfo);
         if (result == 1) {
+            voCache.deleteUserVO(userBaseInfo.getUserId());
             return ResultVOUtil.success("删除成功");
         } else {
             return ResultVOUtil.error(ResultEnum.FAILED.getCode(), "删除失败，用户不存在");
@@ -141,6 +142,7 @@ public class UserServiceImpl implements UserService {
 
     }
 
+    @Deprecated
     @Override
     public SysJSONResult uploadFaceImg(UserPersonalInfo userPersonalInfo) {
         int result = userPersonalInfoMapper.updateByPrimaryKeySelective(userPersonalInfo);
@@ -159,6 +161,7 @@ public class UserServiceImpl implements UserService {
 //        int result = userPersonalInfoMapper.updateByPrimaryKey(u);
         int result = userPersonalInfoMapper.updateSelectUserPersonal(form);
         if (result == 1) {
+            voCache.deleteUserVO(form.getUserId());
             return ResultVOUtil.success("更新用户资料成功", null);
         } else {
             return ResultVOUtil.error(ResultEnum.FAILED.getCode(), "更新用户资料失败");
@@ -218,15 +221,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateUserPhotoIndex(UpdatePhotoIndexForm form) {
-        //       String userId = form.getUserId();
-        //格式：photoId , targetIndex
-//        List<String> strs = form.getPhotoIndex();
-//        strs.forEach(e->{
-//            String[] arr = e.split(",");
-//            String photoId = arr[0];
-//            String targetIndex = arr[1];
-//            userPhotoMapper.updateUserPhotoIndex(id,photoId,Integer.parseInt(targetIndex));
-//        });
+
         Map<String,Integer> map = form.getMap();
         //循环map
         for (Map.Entry<String, Integer> entry : map.entrySet()) {
@@ -235,13 +230,14 @@ public class UserServiceImpl implements UserService {
             userPhotoMapper.updatePhotoIndex(photoId, targetIndex);
         }
         //删除用户userVO
-        redisStringUtil.hdel(RedisKeyEnum.ALL_USER_VO.getCode() , form.getUserId());
+        voCache.deleteUserVO(form.getUserId());
     }
 
     @Override
     public void userRealAuth(UserRealAuthForm form) {
         //修改用户real_auth信息
         userPersonalInfoMapper.updateUserAuth(form.getUserId(), 1);
+        voCache.deleteUserVO(form.getUserId());
     }
 
     @Override

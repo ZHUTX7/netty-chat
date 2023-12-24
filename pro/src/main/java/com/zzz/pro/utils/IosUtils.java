@@ -61,6 +61,10 @@ public class IosUtils {
         return  "";
     }
 
+//    public static void main(String[] args) {
+//        System.out.println(getToken());;
+//    }
+
     /**
      * 获取PrivateKey对象
      *

@@ -17,5 +17,6 @@ public class UserVO {
     private String userHometown;
     private String userRole;
     private int realAuth;
+    private String userType = "DEFAULT";
 
 }

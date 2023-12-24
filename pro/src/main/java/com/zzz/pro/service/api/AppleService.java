@@ -33,6 +33,13 @@ public class AppleService {
     @Resource
     private IosUtils iosUtils;
 
+    @Value("${applepay.verifyUrl}")
+    private String url_apple_pay;
+    @Value("${applepay.verifyTestUrl}")
+    private String test_url_apple_pay;
+    @Value("${applepay.key}")
+    private String key ;
+
     //沙盒
     private final String VERIFY_TRANSACTION_API="https://api.storekit-sandbox.itunes.apple.com/inApps/v1/transactions/";
     //正式环境 https://api.storekit.itunes.apple.com/inApps/v1/transactions/{transactionId}
@@ -61,12 +68,6 @@ public class AppleService {
         }
     }
 
-    @Value("${applepay.verifyUrl}")
-    private String url_apple_pay;
-    @Value("${applepay.verifyTestUrl}")
-    private String test_url_apple_pay;
-    @Value("${applepay.key}")
-    private String key ;
 
 
     /**

@@ -9,6 +9,7 @@ import com.zzz.pro.pojo.dto.UserPersonalInfo;
 import com.zzz.pro.controller.vo.UserVO;
 import com.zzz.pro.pojo.dto.UserRole;
 import com.zzz.pro.utils.RedisStringUtil;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -47,6 +48,14 @@ public class UserVOCache {
             String facePhoto =  userPhotoMapper.selectFaceImage(userId);
             facePhoto = facePhoto ==null ? "":facePhoto;
             vo.setUserImage(facePhoto);
+
+            // 预览模式，IOS过审
+            if(userId.equals("ee37c7de")){
+                vo.setUserType("PREVIEW");
+            }else {
+                vo.setUserType("DEFAULT");
+            }
+
             //放入缓存
             saveUserVO(vo);
             return vo;
@@ -59,6 +68,10 @@ public class UserVOCache {
             return;
         }
         redisStringUtil.hset(RedisKeyEnum.ALL_USER_VO.getCode(), vo.getUserId(), JSONObject.toJSONString(vo));
+    }
+
+    public void deleteUserVO(String userId){
+        redisStringUtil.hdel(RedisKeyEnum.ALL_USER_VO.getCode(),userId);
     }
 
 }

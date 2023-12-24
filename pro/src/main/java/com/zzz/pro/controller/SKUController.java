@@ -3,6 +3,7 @@ package com.zzz.pro.controller;
 import com.zzz.pro.controller.form.BuyForm;
 import com.zzz.pro.controller.form.ConsumeSKUForm;
 import com.zzz.pro.controller.form.IosPaySuccessForm;
+import com.zzz.pro.controller.form.RefundIosForm;
 import com.zzz.pro.pojo.result.SysJSONResult;
 import com.zzz.pro.service.OderService;
 import com.zzz.pro.service.SKUService;
@@ -62,4 +63,18 @@ public class SKUController {
         skuService.consumeProduct(form);
         return  ResultVOUtil.success();
     }
+
+    @GetMapping("/oder/status/query")
+    public  SysJSONResult<Object>  orderStatusQuery(@RequestHeader("refreshToken") String token,
+                                            @RequestHeader("orderId") String orderId){
+        String userId = JWTUtils.getClaim(token,"userId");
+        return  ResultVOUtil.success(oderService.queryOrderStatus(userId,orderId));
+    }
+
+    @PostMapping("/apple/listen")
+    public Object appleListen(@RequestBody RefundIosForm form){
+        skuService.notification(form);
+        return ResultVOUtil.success();
+    }
+
 }

@@ -53,7 +53,7 @@ public class MsmConstantUtils implements InitializingBean {
      * @param phone 手机号
      * @return
      */
-    public static boolean sendPhone(String phone  , String sixBitRandom) {
+    public static boolean sendPhone(String regionCode,String phone  , String sixBitRandom) {
         //判断手机号是否为空
         if (StringUtils.isEmpty(phone)) {
             return false;
@@ -73,7 +73,8 @@ public class MsmConstantUtils implements InitializingBean {
             // 实例化一个请求对象,每个接口都会对应一个request对象
             SendSmsRequest req = new SendSmsRequest();
 
-            //设置发送相关的参数
+            // TODO SMS 设置发送相关的参数
+           // String[] phoneNumberSet1 = {regionCode+phone};
             String[] phoneNumberSet1 = {"86"+phone};
             req.setPhoneNumberSet(phoneNumberSet1);//发送的手机号
             //设置固定的参数

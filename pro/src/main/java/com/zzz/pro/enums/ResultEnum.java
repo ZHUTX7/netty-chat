@@ -53,6 +53,7 @@ public enum ResultEnum implements CodeEnum<Integer>{
     ORDER_INIT_FAILED(3001,"订单初始化失败"),
     ORDER_UPDATE_FAILED(3002,"订单更新失败"),
     SKU_NOT_EXIST(3003,"商品不存在或已下架"),
+    ORDER_NOT_EXIST(3004,"订单不存在") ,
 
     //----道具使用错误 5开头
     PROPS_NOT_ENOUGH(5001,"sku道具不足"),

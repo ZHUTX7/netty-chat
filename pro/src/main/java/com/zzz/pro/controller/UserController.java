@@ -133,16 +133,13 @@ public class UserController {
     //发送短信
     @GetMapping("/sendSms")
     public SysJSONResult sendSms(@Param("phone") String phone,@Param("regionCode") String regionCode, HttpServletRequest request){
-        //获取客户端Ip
-        String ip = request.getRemoteAddr();
-        System.out.println("ip is "+ip);
         if (phone == null || phone.equals("")){
             return ResultVOUtil.error(ResultEnum.PARAM_ERROR.getCode(),"手机号不能为空！");
         }
         if(regionCode == null || !regionCode.equals("0086")){
             return ResultVOUtil.error(ResultEnum.PARAM_ERROR.getCode(),"区号不支持");
         }
-        return  ResultVOUtil.success(smsService.sendSms(phone));
+        return  ResultVOUtil.success(smsService.sendSms(regionCode,phone));
     }
 
     //修改照片位置
@@ -180,4 +177,6 @@ public class UserController {
         userService.updatePhone(form);
         return  ResultVOUtil.success();
     }
+
+
 }
