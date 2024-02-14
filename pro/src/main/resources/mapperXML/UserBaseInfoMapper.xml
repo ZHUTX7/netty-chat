@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.zzz.pro.mapper.UserBaseInfoMapper" >
-  <resultMap id="BaseResultMap" type="com.zzz.pro.pojo.dto.UserBaseInfo" >
+<mapper namespace="com.mindset.ameeno.mapper.UserBaseInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.mindset.ameeno.pojo.dto.UserBaseInfo" >
     <!--
       WARNING - @mbg.generated
     -->

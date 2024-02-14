@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.zzz.pro.mapper.UserPersonalInfoMapper" >
-  <resultMap id="BaseResultMap" type="com.zzz.pro.pojo.dto.UserPersonalInfo" >
+<mapper namespace="com.mindset.ameeno.mapper.UserPersonalInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.mindset.ameeno.pojo.dto.UserPersonalInfo" >
     <!--
       WARNING - @mbg.generated
     -->
@@ -32,7 +32,7 @@
   </select>
 
 
-  <select id="queryUserVO" resultType="com.zzz.pro.controller.vo.UserVO"  >
+  <select id="queryUserVO" resultType="com.mindset.ameeno.controller.vo.UserVO"  >
     SELECT ui.user_id as userId, ui.user_nickname as userNickname, up.photo_url as photoUrl, ui.user_birthdate as userBirthdate, ui.user_sex as userSex,
            up.real_auth as realAuth
     FROM user_personal_info ui
@@ -42,7 +42,7 @@
   </select>
 
 
-  <select id="queryAllUserVO" resultType="com.zzz.pro.controller.vo.UserVO"  >
+  <select id="queryAllUserVO" resultType="com.mindset.ameeno.controller.vo.UserVO"  >
     SELECT ui.user_id as userId, ui.user_nickname as userNickname, up.photo_url as photoUrl, ui.user_birthdate as userBirthdate, ui.user_sex as userSex
     ui.user_hometown as userHometown ,up.photo_name as userImage
     FROM user_personal_info ui left join user_photo up on ui.user_id = up.user_id and up.photo_index = 0
@@ -57,7 +57,7 @@
   </select>
 
   <!-- 指定更新项 -->
-  <update id="updateSelectUserPersonal" parameterType="com.zzz.pro.controller.form.UpdateProfileForm">
+  <update id="updateSelectUserPersonal" parameterType="com.mindset.ameeno.controller.form.UpdateProfileForm">
     UPDATE user_personal_info
     <set>
       <!-- 使用<if>标签来判断是否需要更新字段 -->

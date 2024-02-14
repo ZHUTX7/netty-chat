@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.zzz.pro.mapper.UserMatchMapper" >
-  <resultMap id="BaseResultMap" type="com.zzz.pro.pojo.dto.UserMatch" >
+<mapper namespace="com.mindset.ameeno.mapper.UserMatchMapper" >
+  <resultMap id="BaseResultMap" type="com.mindset.ameeno.pojo.dto.UserMatch" >
     <!--
       WARNING - @mbg.generated
     -->
@@ -10,26 +10,7 @@
     <result column="match_user_id" property="matchUserId" jdbcType="VARCHAR" />
     <result column="active_state" property="activeState" jdbcType="INTEGER" />
   </resultMap>
-  <resultMap id="USER_PERSONAL" type="com.zzz.pro.pojo.dto.UserPersonalInfo" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <result column="user_id" property="userId" jdbcType="VARCHAR" />
-    <result column="user_nickname" property="userNickname" jdbcType="VARCHAR" />
-    <result column="user_sex" property="userSex" jdbcType="INTEGER" />
-    <result column="user_gender" property="userGender" jdbcType="INTEGER" />
-    <result column="user_motto" property="userMotto" jdbcType="VARCHAR" />
-    <result column="user_memo" property="userMemo" jdbcType="VARCHAR" />
-    <result column="user_education" property="userEducation" jdbcType="INTEGER" />
-    <result column="user_profession" property="userProfession" jdbcType="VARCHAR" />
-    <result column="user_constellation" property="userConstellation" jdbcType="VARCHAR" />
-    <result column="user_location" property="userLocation" jdbcType="VARCHAR" />
-    <result column="user_hometown" property="userHometown" jdbcType="VARCHAR" />
-    <result column="user_height" property="userHeight" jdbcType="INTEGER" />
-    <result column="user_weight" property="userWeight" jdbcType="INTEGER" />
-    <result column="user_face_image" property="userFaceImage" jdbcType="VARCHAR" />
-    <result column="user_face_image_big" property="userFaceImageBig" jdbcType="VARCHAR" />
-  </resultMap>
+
   <!--
       随机查询一个没有匹配的用户
     -->
@@ -46,18 +27,6 @@
 	1;
   </select>
 
-  <select id="queryUnMatchUserList" resultMap="USER_PERSONAL"
-          parameterType="String">
-    SELECT
-      *
-    FROM
-      user_personal_info
-    WHERE
-        user_personal_info.user_id NOT IN ( SELECT user_match.my_user_id FROM user_match )
-      AND user_personal_info.user_id != #{userId}
-      LIMIT 0,
-      30;
-  </select>
 
   <!--
         查询匹配到的用户

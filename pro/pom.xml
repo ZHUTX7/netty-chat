@@ -308,7 +308,7 @@
                             <!--一定要找对目录，否则jar找不到依赖lib，前边加../是因为jar在bin下，而bin与lib是平级目录-->
                             <classpathPrefix>../${output.dependence.file.path}</classpathPrefix>
                             <!--指定jar启动入口类 -->
-                            <mainClass>com.zzz.pro.ProApplication</mainClass>
+                            <mainClass>com.mindset.ameeno.ProApplication</mainClass>
                         </manifest>
                         <manifestEntries>
                             <!-- 假如这个项目可能要引入一些外部资源，但是你打包的时候并不想把 这些资源文件打进包里面，这个时候你必须在

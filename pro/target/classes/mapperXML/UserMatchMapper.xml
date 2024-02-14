@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.zzz.pro.mapper.UserMatchMapper" >
-  <resultMap id="BaseResultMap" type="com.zzz.pro.pojo.dto.UserMatch" >
+<mapper namespace="com.mindset.ameeno.mapper.UserMatchMapper" >
+  <resultMap id="BaseResultMap" type="com.mindset.ameeno.pojo.dto.UserMatch" >
     <!--
       WARNING - @mbg.generated
     -->
@@ -10,7 +10,7 @@
     <result column="match_user_id" property="matchUserId" jdbcType="VARCHAR" />
     <result column="active_state" property="activeState" jdbcType="INTEGER" />
   </resultMap>
-  <resultMap id="USER_PERSONAL" type="com.zzz.pro.pojo.dto.UserPersonalInfo" >
+  <resultMap id="USER_PERSONAL" type="com.mindset.ameeno.pojo.dto.UserPersonalInfo" >
     <!--
       WARNING - @mbg.generated
     -->
