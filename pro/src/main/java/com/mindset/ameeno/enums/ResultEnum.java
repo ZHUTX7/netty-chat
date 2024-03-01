@@ -62,6 +62,10 @@ public enum ResultEnum implements CodeEnum<Integer>{
     DATING_POINT_NOT_EXIST(6001,"约会地点不存在"),
     DATING_POINT_NOT_OPEN(6002,"约会地点未在营业时间"),
     DATING_POINT_NOT_SUIT(6003,"没有合适的约会地点"),
+
+    //匹配错误exist
+    MATCH_EXIST_MATCHER(7001,"已经存在匹配聊天对象"),
+    MATCH_CREDIT_LOW(7001,"信誉分低，无法开启匹配"),
     ;
     //商品不存在或已下架
     ;

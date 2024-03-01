@@ -25,6 +25,7 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -58,7 +59,8 @@ public class SKUService {
     AmeenoOrdersMapper ordersMapper;
     @Resource
     UserSkuUsedRecordMapper skuUsedRecordMapper;
-
+    @Resource
+    SkuPushRecordService skuPushRecordService;
     public  List<AmeenoSku>  queryAllSku(){
        List<AmeenoSku> list =  skuMapper.selectBySkuSalesStatus(SkuStatsEnum.SALE.getCode());
        return list;
@@ -94,8 +96,9 @@ public class SKUService {
            else {
                throw new ApiException(ResultEnum.PARAM_ERROR.getCode(), "产品类型错误");
            }
-       });
 
+       });
+        skuPushRecordService.skuPushFinished(orderId);
     }
 
 
@@ -268,5 +271,30 @@ public class SKUService {
         log.info("用户{} 退订{} ",orders.getUserId(),bo.getProductId());
     }
     //
+
+    public void restorePurchase(String userId){
+        //恢复购买
+        //1. 查询账单
+        List<AmeenoOrders> orders =   oderService.queryVipOrdersByUserId(userId);
+
+        //2. 账单复查
+        List<String> orderIds = new ArrayList<>();
+        orders.forEach(e->{
+            if(e.getPaymentStatus().equals(OrderEnum.PAID)){
+                orderIds.add(e.getOrderId());
+            }
+        });
+        if(CollectionUtils.isEmpty(orderIds)){
+            return;
+        }
+        //3.查询发货记录
+        List<String> rePushOrderId =  skuPushRecordService.queryUnPushOrder(orderIds);
+
+        for (String orderId : rePushOrderId){
+            pushSKU(orderId);
+        }
+        return;
+
+    }
 
 }

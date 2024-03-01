@@ -7,9 +7,8 @@ import com.mindset.ameeno.controller.vo.UserPhotoVO;
 import com.mindset.ameeno.controller.vo.UserVO;
 import com.mindset.ameeno.enums.RedisKeyEnum;
 import com.mindset.ameeno.enums.UserRoleEnum;
-import com.mindset.ameeno.mapper.UserBaseInfoMapper;
-import com.mindset.ameeno.mapper.UserPersonalInfoMapper;
-import com.mindset.ameeno.mapper.UserPhotoMapper;
+import com.mindset.ameeno.mapper.*;
+import com.mindset.ameeno.pojo.dto.AmeenoCredit;
 import com.mindset.ameeno.pojo.dto.UserBaseInfo;
 import com.mindset.ameeno.pojo.dto.UserPersonalInfo;
 import com.mindset.ameeno.pojo.dto.UserPhoto;
@@ -21,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -54,6 +54,10 @@ public class UserServiceImpl implements UserService {
     private UserVOCache voCache;
     @Resource
     private RecommendPoolService recommendPoolService;
+    @Resource
+    private UserRoleService userRoleService;
+    @Resource
+    private AmeenoCreditService creditService;
 
     private IDWorker idWorker = new IDWorker(1, 1, 1);
 
@@ -81,7 +85,7 @@ public class UserServiceImpl implements UserService {
 
         // 1. 验证用户是否存在
         if (userBaseInfo == null) {
-            userBaseInfo = userRegister(loginForm.getUserPhone(), loginForm.getDeviceId());
+            userBaseInfo =   newUserDataInit(loginForm.getUserPhone(), loginForm.getDeviceId());
             vo.setIsNewUser(1);
         }
         else {
@@ -270,5 +274,19 @@ public class UserServiceImpl implements UserService {
         recommendPoolService.removeBlackPool(userId);
     }
 
+
+    //新用户创建数据初始化
+
+    @Async
+    @Override
+    public UserBaseInfo newUserDataInit(String phone,String deviceId){
+        //1. 用户基础信息初始化
+        UserBaseInfo baseInfo =   userRegister(phone,deviceId);
+        //2. 用户信誉信息初始化
+        creditService.userCreditInit(baseInfo.getUserId(),phone);
+        //3. 用户角色信息
+        userRoleService.userRoleInit(baseInfo.getUserId());
+        return baseInfo;
+    }
 }
 

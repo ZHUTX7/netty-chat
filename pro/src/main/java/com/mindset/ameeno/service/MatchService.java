@@ -54,6 +54,8 @@ public class MatchService {
     RecommendPoolService recommendPoolService;
     @Resource
     SKUService skuService;
+    @Resource
+    AmeenoCreditMapper creditMapper;
 
     @Transactional(propagation = Propagation.REQUIRED)
     public void match(String userId) {
@@ -67,10 +69,13 @@ public class MatchService {
         }
 
         if (userMatchMapper.queryMatchUserCount(userId) > 0) {
-            log.error("userId:{} 已经有匹配对象",userId);
-            throw new ApiException(200, "已经有匹配对象啦～ 好好聊吧");
+            throw new ApiException(ResultEnum.MATCH_EXIST_MATCHER.getCode(),ResultEnum.MATCH_EXIST_MATCHER.getTitle() );
         }
 
+        double score =  creditMapper.getUserCreditScore(userId);
+        if(score <= 60){
+            throw new ApiException(ResultEnum.MATCH_CREDIT_LOW.getCode(),ResultEnum.MATCH_CREDIT_LOW.getTitle());
+        }
 
         UserPersonalInfo userPersonalInfo = userPersonalInfoMapper.selectByPrimaryKey(userId);
         UserProfileVO userProfileVO = new UserProfileVO();
@@ -135,6 +140,7 @@ public class MatchService {
                 //如果约会状态在进行中 ， 扣除用户信用分TODO
                 if(dating.getStatus().equals(RelEnum.DATING_START.getCode())){
                     //TODO 扣除用户信用分
+
                     //TODO 通知用户
                 }
                 //删除约会

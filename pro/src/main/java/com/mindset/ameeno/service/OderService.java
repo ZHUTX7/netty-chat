@@ -49,6 +49,8 @@ public class OderService {
     private SKUService skuService;
     @Resource
     private AmeenoSkuMapper skuMapper ;
+    @Resource
+    SkuPushRecordService skuPushRecordService;
 
     //订单初始化
     @Transactional
@@ -89,12 +91,6 @@ public class OderService {
     //支付成功  - 订单更新
     @Transactional
     public SysJSONResult updateOrder(IosPaySuccessForm form) {
-//        if(!appleService.verifyTransaction(form.getOrderId())){
-//            log.error("交易验证失败");
-//            return ResultVOUtil.error(ResultEnum.ORDER_UPDATE_FAILED.getCode(),ResultEnum.ORDER_UPDATE_FAILED.getTitle());
-//        }
-
-
         AmeenoOrders order =  ordersMapper.selectByPrimaryKey(form.getOrderId());
         Date now = new Date();
         order.setOrderUpdateTime(now);
@@ -104,6 +100,7 @@ public class OderService {
         order.setPaymentDate(now);
         order.setPaymentId(order.getPaymentId());
         ordersMapper.updateByPrimaryKeySelective(order);
+        skuPushRecordService.addPushRecord(order.getOrderId(),order.getUserId(),form.getReceipt());
         skuService.pushSKU(form.getOrderId());
         return ResultVOUtil.success();
 
@@ -113,6 +110,10 @@ public class OderService {
 
     public AmeenoOrders queryOrders(String orderId) {
         return ordersMapper.selectByPrimaryKey(orderId);
+    }
+
+    public List<AmeenoOrders> queryVipOrdersByUserId(String userId) {
+        return ordersMapper.queryVipOrdersByUserId(userId);
     }
 
     public  List<OrderStatusVO> queryOrderStatus(String userId,String orderId){
@@ -139,4 +140,5 @@ public class OderService {
 
         return voList;
     }
+
 }

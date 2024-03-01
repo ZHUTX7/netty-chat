@@ -43,4 +43,6 @@ public interface UserService {
 
     void deleteUserBlackList(String userId);
 
+    UserBaseInfo newUserDataInit(String phone,String deviceId);
+
 }

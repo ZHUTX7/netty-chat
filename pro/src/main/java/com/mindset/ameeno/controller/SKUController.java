@@ -11,6 +11,7 @@ import com.mindset.ameeno.service.OderService;
 import com.mindset.ameeno.service.api.AppleService;
 import com.mindset.ameeno.utils.JWTUtils;
 import com.mindset.ameeno.utils.ResultVOUtil;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -78,6 +79,11 @@ public class SKUController {
         return ResultVOUtil.success();
     }
 
+    @PostMapping("/restorePurchase")
+    public Object appleListen(@Param("userId") String userId){
+        skuService.restorePurchase(userId);
+        return ResultVOUtil.success();
+    }
 
 
 }
