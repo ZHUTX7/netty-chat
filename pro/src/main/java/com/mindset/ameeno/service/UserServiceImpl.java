@@ -77,7 +77,7 @@ public class UserServiceImpl implements UserService {
         if (  StringUtils.isEmpty(code) ||
                 (ameenoMode.equals("prod") &&!code.equals(loginForm.getVerifyCode()) )
         ){
-            throw new ApiException(ResultEnum.PARAM_ERROR.getCode(), "验证码错误");
+            throw new ApiException(ResultEnum.LOGIN_VERIFY_CODE_ERROR.getCode(), "验证码错误");
         }
         LoginResultVO vo = new LoginResultVO();
 
@@ -260,7 +260,7 @@ public class UserServiceImpl implements UserService {
     public void updatePhone(UpdatePhoneForm form) {
         String code = redisStringUtil.get(form.getNewPhone());
         if(StringUtils.isEmpty(code) || !form.getCode().equals(code)){
-            throw new ApiException(ResultEnum.PARAM_ERROR.getCode(),"验证码错误");
+            throw new ApiException(ResultEnum.LOGIN_VERIFY_CODE_ERROR.getCode(),"验证码错误");
         }
         if( userBaseInfoMapper.checkPhone(form.getNewPhone()) > 0){
             throw new ApiException(ResultEnum.PHONE_IS_EXIST.getCode(),ResultEnum.PHONE_IS_EXIST.getTitle());
@@ -287,6 +287,17 @@ public class UserServiceImpl implements UserService {
         //3. 用户角色信息
         userRoleService.userRoleInit(baseInfo.getUserId());
         return baseInfo;
+    }
+
+    @Override
+    public void userLogout(String userId) {
+        //用户退出
+        //清理deviceID
+        //清理channel
+        redisStringUtil.del(RedisKeyEnum.USER_DEVICE_ID.getCode()
+                + userId);
+        //清理定位池
+        mapService.remove(userId);
     }
 }
 

@@ -28,6 +28,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @Author zhutianxiang
@@ -66,7 +67,8 @@ public class OderService {
             }
             BigDecimal amount = sku.getSkuPrice();
             AmeenoOrders order = new AmeenoOrders();
-            String oderId = OrderIdGenerate.getOrderId(userId);
+            String oderId = UUID.randomUUID().toString();
+//            String oderId = OrderIdGenerate.getOrderId(userId);
             order.setOrderId(oderId);
             order.setUserId(userId);
             order.setOrderCreateTime(new Date());
@@ -110,6 +112,10 @@ public class OderService {
 
     public AmeenoOrders queryOrders(String orderId) {
         return ordersMapper.selectByPrimaryKey(orderId);
+    }
+
+    public AmeenoOrders queryOrdersByTransactionId(String transactionId) {
+        return ordersMapper.queryOneByPaymentId(transactionId);
     }
 
     public List<AmeenoOrders> queryVipOrdersByUserId(String userId) {

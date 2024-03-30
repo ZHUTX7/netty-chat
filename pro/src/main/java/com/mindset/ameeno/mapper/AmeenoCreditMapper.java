@@ -16,5 +16,5 @@ public interface AmeenoCreditMapper extends MyMapper<AmeenoCredit> {
     void addUserScore(String userId,double score);
 
     @Select("select score from ameeno_credit  where  user_id  = #{userId} ")
-    double getUserCreditScore(String userId);
+    Double getUserCreditScore(String userId);
 }

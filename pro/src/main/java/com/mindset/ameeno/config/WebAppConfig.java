@@ -25,21 +25,21 @@ public class WebAppConfig extends WebMvcConfigurerAdapter {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        if(closeVerify == 1){
-            return;
-        }
-        // 1. token拦截器
-        registry.addInterceptor(loginInterceptor)//添加拦截器
-                .excludePathPatterns("/user/login")//对应的不拦截的请求
-                .excludePathPatterns("/user/register")
-                .excludePathPatterns("/user/sendSms")
-                .excludePathPatterns("/app/config/query")
-                .excludePathPatterns("/sku/pay/callback")
-                .excludePathPatterns("/sku/apple/listen")
-                .addPathPatterns("/**"); //拦截所有请求
-//        // 2. api保护器
-        registry.addInterceptor(accessLimitInterceptor)//添加拦截器
-                .addPathPatterns("/**"); //拦截所有请求
+//        if(closeVerify == 1){
+//            return;
+//        }
+//        // 1. token拦截器
+//        registry.addInterceptor(loginInterceptor)//添加拦截器
+//                .excludePathPatterns("/user/login")//对应的不拦截的请求
+//                .excludePathPatterns("/user/register")
+//                .excludePathPatterns("/user/sendSms")
+//                .excludePathPatterns("/app/config/query")
+//                .excludePathPatterns("/sku/pay/callback")
+//                .excludePathPatterns("/sku/apple/listen")
+//                .addPathPatterns("/**"); //拦截所有请求
+////        // 2. api保护器
+//        registry.addInterceptor(accessLimitInterceptor)//添加拦截器
+//                .addPathPatterns("/**"); //拦截所有请求
     }
 }
 

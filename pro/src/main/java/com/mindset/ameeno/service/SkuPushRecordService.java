@@ -1,5 +1,6 @@
 package com.mindset.ameeno.service;
 
+import com.mindset.ameeno.enums.ResultEnum;
 import com.mindset.ameeno.exception.ApiException;
 import com.mindset.ameeno.mapper.AmeenoSkuPushRecordMapper;
 import com.mindset.ameeno.pojo.dto.AmeenoSkuPushRecord;
@@ -49,5 +50,18 @@ public class SkuPushRecordService {
 
     public List<String> queryUnPushOrder(List<String> orderIds){
         return   skuPushRecordMapper.queryUnPushSkuOrderId(orderIds);
+    }
+
+
+    public boolean checkIsPushed(String oderId){
+        Integer state =  skuPushRecordMapper.queryPushStateByOrderId(oderId);
+        if(state == null){
+            throw new ApiException(500,"发货记录表中没有该订单ID");
+        }
+        else if (state ==  1 ){
+            return true;
+        }
+        else
+            return false;
     }
 }

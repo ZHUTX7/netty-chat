@@ -86,4 +86,9 @@ public class SKUController {
     }
 
 
+    @PostMapping("/verify/transaction")
+    public String verifyTransaciton(@Param("transacionId") String transactionId){
+        return appleService.verifyTransaction(transactionId);
+    }
+
 }

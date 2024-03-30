@@ -72,8 +72,8 @@ public class MatchService {
             throw new ApiException(ResultEnum.MATCH_EXIST_MATCHER.getCode(),ResultEnum.MATCH_EXIST_MATCHER.getTitle() );
         }
 
-        double score =  creditMapper.getUserCreditScore(userId);
-        if(score <= 60){
+        Double score =  creditMapper.getUserCreditScore(userId);
+        if( score != null &&  score <= 60){
             throw new ApiException(ResultEnum.MATCH_CREDIT_LOW.getCode(),ResultEnum.MATCH_CREDIT_LOW.getTitle());
         }
 

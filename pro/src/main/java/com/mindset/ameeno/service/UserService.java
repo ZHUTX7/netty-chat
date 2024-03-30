@@ -45,4 +45,5 @@ public interface UserService {
 
     UserBaseInfo newUserDataInit(String phone,String deviceId);
 
+    void userLogout(String userId);
 }

@@ -72,6 +72,11 @@ public class SKUService {
     public void pushSKU(String orderId) {
        AmeenoOrders oder =  oderService.queryOrders(orderId);
 
+       //检查发货状态
+       if(skuPushRecordService.checkIsPushed(orderId)){
+           return;
+       };
+
        String skuId = oder.getBuySkuId();
        //1.查询SKU商品条目
        List<SkuProductBO> list =  skuProductMapper.selectBySkuId(skuId);
@@ -207,7 +212,7 @@ public class SKUService {
         }
         UserPropsBags consumerSKU =   userPropsBagsMapper.selectOneSKU(userId,productId);
         if(consumerSKU == null) {
-            throw new ApiException(ResultEnum.PARAM_ERROR.getCode(), "用户产品数量不足");
+            throw new ApiException(ResultEnum.PROPS_NOT_ENOUGH.getCode(), "用户产品数量不足");
         }
         if(consumerSKU.getTimeLimitFlag() == 1) {
             //消耗
@@ -215,7 +220,7 @@ public class SKUService {
             return;
         }
         if(consumerSKU.getProductCount()<1){
-            throw new ApiException(ResultEnum.PARAM_ERROR.getCode(), "用户产品数量不足");
+            throw new ApiException(ResultEnum.PROPS_NOT_ENOUGH.getCode(), "用户产品数量不足");
         }
         consumerSKU.setProductCount(consumerSKU.getProductCount() - 1);
         userPropsBagsMapper.updateByPrimaryKeySelective(consumerSKU);
@@ -241,8 +246,8 @@ public class SKUService {
     @Transactional
     public void renew(AppleReceiptBO bo ){
         //1. 查找原订单, 通过订单查询用户ID 、 PRODUCT
-        String orderId = bo.getOriginalTransactionId().toString();
-        AmeenoOrders orders =   oderService.queryOrders(orderId);
+        String trxId = bo.getOriginalTransactionId().toString();
+        AmeenoOrders orders =   oderService.queryOrdersByTransactionId(trxId);
         //2. 创建续费订单
         AmeenoOrders newOrder = new AmeenoOrders();
         newOrder.setOrderId(bo.getTransactionId().toString()); // 订单ID

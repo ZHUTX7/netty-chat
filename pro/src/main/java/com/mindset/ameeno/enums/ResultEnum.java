@@ -46,7 +46,7 @@ public enum ResultEnum implements CodeEnum<Integer>{
 
     //用户业务报错 2开头
     PHONE_IS_EXIST(2001,"用户手机号已经被注册"),
-
+    LOGIN_VERIFY_CODE_ERROR(2002,"用户验证码错误"),
 
     //---------支付业务报错 3开头
 

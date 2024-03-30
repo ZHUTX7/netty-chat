@@ -78,18 +78,18 @@ public class IosUtils {
         return null;
     }
 
-    public boolean verifyTransaction(String base64Transaction){
+    public String verifyTransaction(String base64Transaction){
         try{
             String[] str =   base64Transaction.split("\\.");
             String json =  str[1];
             ApplePurchaseBO purchaseBO = JsonUtils.jsonToPojo(json, ApplePurchaseBO.class);
             if(purchaseBO.getInAppOwnershipType().equals("PURCHASED")){
-                return true;
+                return JsonUtils.objectToJson(purchaseBO);
             }else
-                return false;
+                return "";
         }catch (Exception e){
             log.error("transaction verify failed ! : {}",e);
-            return false;
+            return "";
         }
     }
 

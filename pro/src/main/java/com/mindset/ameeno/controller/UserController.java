@@ -2,9 +2,11 @@ package com.mindset.ameeno.controller;
 
 
 import com.mindset.ameeno.controller.form.*;
+import com.mindset.ameeno.controller.vo.ChatMsgVO;
 import com.mindset.ameeno.pojo.dto.UserBaseInfo;
 import com.mindset.ameeno.service.UserService;
 import com.mindset.ameeno.service.api.SmsService;
+import com.mindset.ameeno.utils.JWTUtils;
 import com.mindset.ameeno.utils.ResultVOUtil;
 import com.mindset.ameeno.config.ApiLimit;
 import com.mindset.ameeno.enums.ResultEnum;
@@ -17,6 +19,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author ztx
@@ -170,5 +175,13 @@ public class UserController {
         return  ResultVOUtil.success();
     }
 
+
+
+    @GetMapping("/logout")
+    public SysJSONResult logout(@RequestHeader("refreshToken") String token){
+        String userId =  JWTUtils.getClaim(token,"userId");
+        userService.userLogout(userId);
+        return ResultVOUtil.success();
+    }
 
 }

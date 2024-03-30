@@ -8,7 +8,7 @@
         <version>2.3.4.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.zzz</groupId>
+    <groupId>com.mindset</groupId>
     <artifactId>chat-core</artifactId>
     <version>1</version>
     <name>chat-core</name>

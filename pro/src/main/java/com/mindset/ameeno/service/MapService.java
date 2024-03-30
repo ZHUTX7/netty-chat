@@ -94,6 +94,10 @@ public class MapService {
         return result;
     }
 
+    public void remove(String userId){
+        redisUtil.getRedisTemplate().opsForGeo().remove(KEY,userId);
+    }
+
     //计算两个人的距离
     public double getDistance(String userId,String target){
         Distance distance = redisUtil.getRedisTemplate().opsForGeo().distance(KEY, userId, target, Metrics.NEUTRAL);

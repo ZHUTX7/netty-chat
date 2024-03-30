@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import javax.net.ssl.*;
@@ -77,7 +78,7 @@ public class AppleService {
     //沙盒
     private final String VERIFY_SANDBOX_API="https://api.storekit-sandbox.itunes.apple.com/inApps/v1/transactions/";
     //正式环境
-    private final String VERIFY_PROD_API = "https://api.storekit.itunes.apple.com/inApps/v1/transactions/{transactionId}";
+    private final String VERIFY_PROD_API = "https://api.storekit.itunes.apple.com/inApps/v1/transactions/";
     private static class TrustAnyTrustManager implements X509TrustManager {
         @Override
         public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
@@ -177,7 +178,7 @@ public class AppleService {
     }
 
     //单个交易验单
-    public boolean verifyTransaction(String transactionId){
+    public String verifyTransaction(String transactionId){
        String url ;
        if(env.equals("prod")){
            url = VERIFY_PROD_API +transactionId;
@@ -186,6 +187,7 @@ public class AppleService {
        }
        Map<String,String> header = new HashMap<>();
        header.put("Authorization",iosUtils.getToken());
+       log.info("token is {} ",iosUtils.getToken());
        String response =   httpClientUtils.getForObject(url,header,String.class);
        return iosUtils.verifyTransaction(response);
     }
@@ -195,7 +197,7 @@ public class AppleService {
         //解析苹果请求的数据
         JSONObject jsonObject=JSONObject.parseObject(signedPayload);
         ;
-        Jws<Claims> result=jwsUtils.verifyJWT(jsonObject.getJSONArray("x5c").get(0).toString(),form.getSignedPayload());
+        Jws<Claims> result=jwsUtils.verifyAppleJWT(jsonObject.getJSONArray("x5c").get(0).toString(),form.getSignedPayload());
         log.info("------receive IosSysMsg -------");
         log.info("msg is [{}]",result.toString());
         log.info("------ finished  -------");
@@ -207,7 +209,7 @@ public class AppleService {
         String resulttran= new String(Base64.getDecoder().decode(envmap.get("signedTransactionInfo").toString().split("\\.")[0]));
         JSONObject jsonObjecttran=JSONObject.parseObject(resulttran);
 
-        Jws<Claims> result3=jwsUtils.verifyJWT(jsonObjecttran.getJSONArray("x5c").get(0).toString(),envmap.get("signedTransactionInfo").toString());
+        Jws<Claims> result3=jwsUtils.verifyAppleJWT(jsonObjecttran.getJSONArray("x5c").get(0).toString(),envmap.get("signedTransactionInfo").toString());
         System.out.println(result3.getBody().toString());
 //        HashMap<String,Object> orderMap=result3.getBody().("data",HashMap.class);
         log.info("Apple store notification type is {} ,and env is {}：",notificationType,env);
@@ -221,7 +223,13 @@ public class AppleService {
             skuService.refund(AppleReceiptBO.claims2ReceiptBO(result3));
         }
         else if(notificationType.equals("SUBSCRIBED")) {
-            skuService.pushSKU(result3.getBody().get("originalTransactionId").toString());
+            String oderId = result3.getBody().get("appAccountToken").toString() == null ? "" : result3.getBody().get("appAccountToken").toString();
+            log.info("oderId is : "+oderId);
+            skuService.pushSKU(oderId);
+        }
+        else if (notificationType.equals("DID_CHANGE_RENEWAL_PREF")){
+            log.info("升级订阅计划");
+
         }
         else {
             log.info("notificationType未处理：" + notificationType);
